@@ -14,7 +14,7 @@ describe('Training Controller', () => {
 
       expect(result.success).toBe(true);
       expect(result.session_id).toBeDefined();
-      expect(result.session_id).toMatch(/^sess_/);
+      expect(result.session_id).toMatch(/^session_/);
     });
 
     it('should generate TTS welcome message', async () => {

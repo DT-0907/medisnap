@@ -327,3 +327,58 @@ function parseClinicalResponse(response: string): ClinicalAdvice {
     reasoning: response,
   };
 }
+
+// ============================================
+// VOICE INTENT EXTRACTION
+// ============================================
+
+export interface IntentResult {
+  intent: string;
+  parameters?: any;
+  confidence?: number;
+}
+
+/**
+ * Extract intent from voice command transcription
+ * Per implementation plan Task 3.11.10
+ */
+export async function extractIntent(
+  transcription: string,
+  _context?: any
+): Promise<IntentResult> {
+  try {
+    const prompt = `Extract the intent and parameters from this voice command: "${transcription}"
+
+Possible intents:
+- start_training
+- start_assessment
+- record_symptom
+- prescribe_medication
+- show_medications
+- show_allergies
+- show_patient_history
+- repeat_instructions
+- end_session
+- unknown
+
+Return JSON only in this format:
+{
+  "intent": "intent_name",
+  "parameters": { extracted parameters },
+  "confidence": 0.9
+}`;
+
+    const response = await generateResponse(prompt);
+
+    // Parse JSON from response
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    return { intent: 'unknown', confidence: 0 };
+  } catch (error) {
+    console.error('Error extracting intent:', error);
+    return { intent: 'unknown', confidence: 0 };
+  }
+}

@@ -31,6 +31,9 @@ app.get('/', (_req: Request, res: Response) => {
     endpoints: {
       health: '/health',
       training: '/api/training',
+      clinical: '/api/clinical',
+      voice: '/api/voice',
+      tts: '/api/tts',
       docs: 'Coming soon',
     },
   });
@@ -38,7 +41,14 @@ app.get('/', (_req: Request, res: Response) => {
 
 // API Routes
 import trainingRoutes from './routes/training';
+import clinicalRoutes from './routes/clinical';
+import voiceRoutes from './routes/voice';
+import ttsRoutes from './routes/tts';
+
 app.use('/api/training', trainingRoutes);
+app.use('/api/clinical', clinicalRoutes);
+app.use('/api/voice', voiceRoutes);
+app.use('/api/tts', ttsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
