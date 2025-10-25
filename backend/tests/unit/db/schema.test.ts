@@ -23,8 +23,8 @@ describe('Database Schema Validation', () => {
     it('should have UUID primary key with default generator', async () => {
       // Query information_schema to verify column definition
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'id'
+        p_table_name: 'patients',
+        p_column_name: 'id'
       });
       
       expect(error).toBeNull();
@@ -34,8 +34,8 @@ describe('Database Schema Validation', () => {
 
     it('should have medications as JSONB type (not TEXT[])', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'medications'
+        p_table_name: 'patients',
+        p_column_name: 'medications'
       });
       
       expect(error).toBeNull();
@@ -44,8 +44,8 @@ describe('Database Schema Validation', () => {
 
     it('should have allergies as TEXT[] array type', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'allergies'
+        p_table_name: 'patients',
+        p_column_name: 'allergies'
       });
       
       expect(error).toBeNull();
@@ -54,8 +54,8 @@ describe('Database Schema Validation', () => {
 
     it('should have diagnosis_history as JSONB type', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'diagnosis_history'
+        p_table_name: 'patients',
+        p_column_name: 'diagnosis_history'
       });
       
       expect(error).toBeNull();
@@ -64,8 +64,8 @@ describe('Database Schema Validation', () => {
 
     it('should have vital_signs as JSONB type', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'vital_signs'
+        p_table_name: 'patients',
+        p_column_name: 'vital_signs'
       });
       
       expect(error).toBeNull();
@@ -74,12 +74,12 @@ describe('Database Schema Validation', () => {
 
     it('should have NOT NULL constraints on required fields', async () => {
       const { data: nameInfo, error: nameError } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'name'
+        p_table_name: 'patients',
+        p_column_name: 'name'
       });
       const { data: ageInfo, error: ageError } = await supabase.rpc('get_column_info', {
-        table_name: 'patients',
-        column_name: 'age'
+        p_table_name: 'patients',
+        p_column_name: 'age'
       });
       
       expect(nameError).toBeNull();
@@ -101,7 +101,7 @@ describe('Database Schema Validation', () => {
 
     it('should have patient_id foreign key constraint', async () => {
       const { data, error } = await supabase.rpc('get_foreign_keys', {
-        table_name: 'visits'
+        p_table_name: 'visits'
       });
       
       expect(error).toBeNull();
@@ -126,8 +126,8 @@ describe('Database Schema Validation', () => {
 
     it('should have default status of pending_physician_approval', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'prescriptions',
-        column_name: 'status'
+        p_table_name: 'prescriptions',
+        p_column_name: 'status'
       });
       
       expect(error).toBeNull();
@@ -136,8 +136,8 @@ describe('Database Schema Validation', () => {
 
     it('should have blocked as BOOLEAN with default FALSE', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'prescriptions',
-        column_name: 'blocked'
+        p_table_name: 'prescriptions',
+        p_column_name: 'blocked'
       });
       
       expect(error).toBeNull();
@@ -147,8 +147,8 @@ describe('Database Schema Validation', () => {
 
     it('should have warnings as JSONB type', async () => {
       const { data, error } = await supabase.rpc('get_column_info', {
-        table_name: 'prescriptions',
-        column_name: 'warnings'
+        p_table_name: 'prescriptions',
+        p_column_name: 'warnings'
       });
       
       expect(error).toBeNull();
