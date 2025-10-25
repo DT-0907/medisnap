@@ -1,0 +1,121 @@
+{
+  "sarah_chen": {
+    "id": "DEMO_001",
+    "name": "Sarah Chen",
+    "age": 34,
+    "sex": "Female",
+    "allergies": ["Penicillin"],
+    "medications": [
+      {
+        "name": "Warfarin",
+        "dosage": "5mg daily",
+        "started": "2024-03-01"
+      },
+      {
+        "name": "Loratadine",
+        "dosage": "10mg daily",
+        "started": "2024-01-15"
+      }
+    ],
+    "diagnosis_history": [
+      {
+        "date": "2024-10-01",
+        "diagnosis": "Seasonal allergies",
+        "provider": "Dr. Smith"
+      },
+      {
+        "date": "2024-08-15",
+        "diagnosis": "Annual checkup - healthy",
+        "provider": "Dr. Smith"
+      },
+      {
+        "date": "2024-03-01",
+        "diagnosis": "Atrial fibrillation",
+        "provider": "Dr. Lee"
+      }
+    ],
+    "current_vitals": {
+      "bp": "118/76",
+      "hr": 88,
+      "o2": 97,
+      "temp": 101.5
+    },
+    "chief_complaint": "Persistent cough and fever"
+  },
+  "robert_martinez": {
+    "id": "DEMO_002",
+    "name": "Robert Martinez",
+    "age": 58,
+    "sex": "Male",
+    "allergies": [],
+    "medications": [
+      {
+        "name": "Lisinopril",
+        "dosage": "10mg daily",
+        "started": "2023-06-10"
+      },
+      {
+        "name": "Metformin",
+        "dosage": "500mg twice daily",
+        "started": "2023-06-10"
+      }
+    ],
+    "diagnosis_history": [
+      {
+        "date": "2024-09-20",
+        "diagnosis": "Hypertension (controlled)",
+        "provider": "Dr. Johnson"
+      },
+      {
+        "date": "2024-09-20",
+        "diagnosis": "Type 2 Diabetes (controlled)",
+        "provider": "Dr. Johnson"
+      },
+      {
+        "date": "2024-07-10",
+        "diagnosis": "Routine medication check",
+        "provider": "Dr. Johnson"
+      }
+    ],
+    "current_vitals": {
+      "bp": "148/94",
+      "hr": 76,
+      "o2": 99,
+      "temp": 98.4
+    },
+    "chief_complaint": "Routine checkup"
+  },
+  "emily_watson": {
+    "id": "DEMO_003",
+    "name": "Emily Watson",
+    "age": 45,
+    "sex": "Female",
+    "allergies": ["Sulfa drugs"],
+    "medications": [
+      {
+        "name": "Metoprolol",
+        "dosage": "50mg twice daily",
+        "started": "2024-03-01"
+      }
+    ],
+    "diagnosis_history": [
+      {
+        "date": "2024-03-01",
+        "diagnosis": "Atrial fibrillation",
+        "provider": "Dr. Lee"
+      },
+      {
+        "date": "2024-01-15",
+        "diagnosis": "Deep vein thrombosis (resolved)",
+        "provider": "Dr. Lee"
+      }
+    ],
+    "current_vitals": {
+      "bp": "125/80",
+      "hr": 72,
+      "o2": 98,
+      "temp": 98.6
+    },
+    "chief_complaint": "Joint pain"
+  }
+}

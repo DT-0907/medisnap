@@ -1,0 +1,83 @@
+{
+  "prescription_warfarin_interaction": {
+    "blocked": true,
+    "warnings": [
+      {
+        "severity": "HIGH",
+        "type": "drug_interaction",
+        "message": "CONTRAINDICATION: Ibuprofen interacts with Warfarin (current medication). Risk of severe bleeding.",
+        "details": "NSAIDs like Ibuprofen significantly increase bleeding risk when combined with anticoagulants like Warfarin. This combination can lead to gastrointestinal bleeding and other serious hemorrhagic events."
+      }
+    ],
+    "alternatives": [
+      {
+        "medication": "Acetaminophen",
+        "dosage": "500mg",
+        "rationale": "No interaction with Warfarin. Safe for pain relief and fever reduction."
+      },
+      {
+        "medication": "Topical NSAIDs",
+        "dosage": "Apply as needed",
+        "rationale": "Minimal systemic absorption. Lower bleeding risk compared to oral NSAIDs."
+      }
+    ],
+    "tts_response": "Warning: Ibuprofen cannot be prescribed. It interacts with the patient's current Warfarin medication, causing severe bleeding risk. I recommend Acetaminophen 500 milligrams instead, which is safe with Warfarin.",
+    "tts_audio_url": "/demo/audio/warfarin_warning.mp3"
+  },
+  "prescription_success": {
+    "blocked": false,
+    "prescription": {
+      "id": "RX_DEMO_001",
+      "medication": "Acetaminophen",
+      "dosage": "500mg",
+      "frequency": "every 6 hours as needed",
+      "quantity": 30,
+      "status": "PENDING",
+      "created_at": "2025-10-24T10:15:00Z"
+    },
+    "tts_response": "Prescription logged: Acetaminophen 500 milligrams, every 6 hours as needed. Status: pending physician approval.",
+    "tts_audio_url": "/demo/audio/prescription_success.mp3"
+  },
+  "symptom_recorded": {
+    "success": true,
+    "symptom": {
+      "id": "SYM_DEMO_001",
+      "description": "Persistent cough and fever",
+      "timestamp": "2025-10-24T10:12:00Z",
+      "patient_id": "DEMO_001"
+    },
+    "tts_response": "Symptom recorded: persistent cough and fever.",
+    "tts_audio_url": "/demo/audio/symptom_recorded.mp3"
+  },
+  "patient_loaded": {
+    "success": true,
+    "patient_id": "DEMO_001",
+    "tts_response": "Patient Sarah Chen loaded. Age 34, allergies: Penicillin. Current medications: Warfarin and Loratadine.",
+    "tts_audio_url": "/demo/audio/patient_loaded.mp3"
+  },
+  "allergy_check_blocked": {
+    "blocked": true,
+    "warnings": [
+      {
+        "severity": "CRITICAL",
+        "type": "allergy",
+        "message": "ALLERGY ALERT: Patient is allergic to Penicillin.",
+        "details": "Prescribing Amoxicillin (a penicillin-class antibiotic) to a patient with documented Penicillin allergy can cause severe allergic reactions including anaphylaxis."
+      }
+    ],
+    "alternatives": [
+      {
+        "medication": "Azithromycin",
+        "dosage": "250mg",
+        "rationale": "Macrolide antibiotic. No cross-reactivity with penicillin allergies."
+      },
+      {
+        "medication": "Doxycycline",
+        "dosage": "100mg",
+        "rationale": "Tetracycline antibiotic. Safe alternative for penicillin-allergic patients."
+      }
+    ],
+    "tts_response": "Critical alert: Patient is allergic to Penicillin. Amoxicillin cannot be prescribed. I recommend Azithromycin 250 milligrams as a safe alternative.",
+    "tts_audio_url": "/demo/audio/allergy_alert.mp3"
+  }
+}
