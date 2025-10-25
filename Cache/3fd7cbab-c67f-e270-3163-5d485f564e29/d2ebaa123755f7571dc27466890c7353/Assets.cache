@@ -1,0 +1,17 @@
+- !<AssetCache>
+  AssetFiles:
+    320d9cb4-ce80-48e1-9c25-fbceef327194: 3fd7cbab-c67f-e270-3163-5d485f564e29/d2ebaa123755f7571dc27466890c7353/Data/cl_goup.mesh
+  Assets:
+    - !<FileMesh/320d9cb4-ce80-48e1-9c25-fbceef327194>
+      PackagePath: ""
+      Info: !<MeshInfo>
+        Triangles: 500
+        Vertices: 317
+        Blendshapes:
+          []
+        Joints: 0
+        AabbSize: {x: 0.729806, y: 0.732030, z: 0.727607}
+  SourceHash: d2ebaa123755f7571dc27466890c7353
+  FileHash: 474c0005a2ebdcbea1d5d554aeec358b
+  NativePackageItems:
+    []

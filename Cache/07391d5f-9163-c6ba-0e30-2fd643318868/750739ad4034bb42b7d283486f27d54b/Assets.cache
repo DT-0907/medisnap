@@ -1,0 +1,13 @@
+- !<AssetCache>
+  AssetFiles:
+    924dbe17-7c6f-4846-aaf5-e4b76faac1ac: 07391d5f-9163-c6ba-0e30-2fd643318868/750739ad4034bb42b7d283486f27d54b/Data/fins_rocket-B.png
+  Assets:
+    - !<FileTexture/924dbe17-7c6f-4846-aaf5-e4b76faac1ac>
+      PackagePath: ""
+      FileInfo: !<FileTextureInfo>
+        Width: 450
+        Height: 450
+  SourceHash: 750739ad4034bb42b7d283486f27d54b
+  FileHash: 054230380aa6f007c664d4a6ee219e40
+  NativePackageItems:
+    []

@@ -1,0 +1,326 @@
+- !<AssetCache>
+  AssetFiles:
+    {}
+  Assets:
+    []
+  SourceHash: fd5960ebfe492cb8c8a61bebce67b6fa
+  FileHash: 055479529b72879a650c064d78b082ee
+  NativePackageItems:
+    - !<own> 138bb9b1-70b0-4f98-d50f-c22b508f5788
+    - !<own> 77f073ad-c831-ddbe-b69e-7019edfd038f
+    - !<own> 325e5a05-dcef-bb9e-1281-d56539668af3
+    - !<own> 288beb03-ecb0-8841-bedc-3420af8ecb07
+    - !<own> fb6fa736-6e8b-5390-a064-13368ecde129
+    - !<own> ecac45ad-290d-0709-50af-0cd1e7bb5276
+    - !<own> 2dabf6e8-0089-8db4-fdcf-648c94e0f949
+- !<AssetImportMetadata/138bb9b1-70b0-4f98-d50f-c22b508f5788>
+  ImportedAssetIds:
+    ObjectPrefab: !<reference> 35ba717c-3b23-45f6-8260-9ebaac159952
+  ImporterName: ObjectPrefabImporter
+  PrimaryAsset: !<reference> 35ba717c-3b23-45f6-8260-9ebaac159952
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    ObjectPrefab: !<own> 519f8fa7-1268-45df-b776-e94756ef51d7
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptComponent/1d7d9ef6-5a82-4066-410a-37616a44cde7>
+  PrefabRemaps:
+    []
+  Name: HandDockedMenu
+  Enabled: true
+  ScriptAsset: !<reference> 7ebd0886-ff71-4fc0-a72e-2086a793c193
+  ScriptInputsDefault:
+    buttonHorizontalSpacing: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      buttonHorizontalSpacing: !<float> 1.000000
+  ScriptTypes:
+    "":
+      {}
+- !<AssetImportMetadata/288beb03-ecb0-8841-bedc-3420af8ecb07>
+  ImportedAssetIds:
+    Material: !<reference> b76871bc-b3b6-4dd4-9386-580ab3c2f9de
+  ImporterName: MaterialImporter
+  PrimaryAsset: !<reference> b76871bc-b3b6-4dd4-9386-580ab3c2f9de
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<AssetImportMetadata/2dabf6e8-0089-8db4-fdcf-648c94e0f949>
+  ImportedAssetIds:
+    {}
+  ImporterName: NativePackageImporter
+  PrimaryAsset: !<reference> c07d6aba-e866-4b53-abaa-9848ce573786
+  PackageType: PackedNativePackageRoot
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<SceneObject/2dac6b6c-f3b7-4b74-59a2-0d2019797176>
+  PrefabRemaps:
+    []
+  Name: HandDockedMenu Refab
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> c1e105f3-93b6-4ca1-45d4-fe84d10fb94b
+  Components:
+    []
+- !<AssetImportMetadata/325e5a05-dcef-bb9e-1281-d56539668af3>
+  ImportedAssetIds:
+    Texture: !<reference> 5a69ebdf-5122-48d7-b641-3c4ae96771e6
+  ImporterName: FileTextureImporter
+  PrimaryAsset: !<reference> 5a69ebdf-5122-48d7-b641-3c4ae96771e6
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<SingleCompressionSettings>
+    CompressorName: Performance
+    CompressionSettings: !<TextureCompressionMipmapSettings>
+      Level: Medium
+      Mipmap: false
+- !<SceneObject/4bf8c289-b2f8-4dd2-66f3-4e64561e7e9f>
+  PrefabRemaps:
+    []
+  Name: Buttons
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 81d1379a-f05b-4cad-418c-50d86faa6c9e
+  Components:
+    []
+- !<ObjectPrefabAssetData/519f8fa7-1268-45df-b776-e94756ef51d7>
+  Prototype: !<ObjectOwner/a64e4a63-624b-4d37-bfd6-f9009f958324>
+    PackagePath: ""
+    objects:
+      - !<own> 2dac6b6c-f3b7-4b74-59a2-0d2019797176
+- !<LookAtComponent/5f2a7875-185c-4c5a-4673-a7f364f6a080>
+  PrefabRemaps:
+    []
+  Name: Look At
+  Enabled: true
+  LookAtMode: LookAtPoint
+  AimVectors: ZAimYUp
+  WorldUpVector: SceneY
+  Target: !<reference> 00000000-0000-0065-0000-000000000064
+  OffsetRotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+- !<Image/61f6bba6-dd64-44f1-60c5-16c5be9c3284>
+  PrefabRemaps:
+    []
+  Name: Image
+  Enabled: true
+  RenderOrder: 2
+  StretchMode: Fit
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> b76871bc-b3b6-4dd4-9386-580ab3c2f9de
+  FlipX: false
+  FlipY: false
+  RotationAngle: 0
+  Pivot: {x: 0.000000, y: 0.000000}
+  ExtentsTarget: !<reference> 00000000-0000-0000-0000-000000000000
+- !<AssetImportMetadata/77f073ad-c831-ddbe-b69e-7019edfd038f>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 7ebd0886-ff71-4fc0-a72e-2086a793c193
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 7ebd0886-ff71-4fc0-a72e-2086a793c193
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 935ede8a-a636-4c34-a8b5-a87bab60dc46
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<SceneObject/81d1379a-f05b-4cad-418c-50d86faa6c9e>
+  PrefabRemaps:
+    []
+  Name: ResummonButton
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 2.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 91a37c2f-78d1-42e5-7b94-75b595d098a3
+  Components:
+    - !<own> 5f2a7875-185c-4c5a-4673-a7f364f6a080
+    - !<own> 8d64a15d-5e45-4ddb-693f-0b1156faadff
+- !<ScriptComponent/8d64a15d-5e45-4ddb-693f-0b1156faadff>
+  PrefabRemaps:
+    []
+  Name: RoundButton
+  Enabled: true
+  ScriptAsset: !<reference> ecf4e352-5db4-4239-8a5e-c4c517a0f03c
+  ScriptInputsDefault:
+    _renderOrder: true
+    _inactive: true
+    _playAudio: true
+    _style: true
+    _toggleable: true
+    _defaultToOn: true
+    addCallbacks: true
+    triggerUpCallbacks: true
+    triggerDownCallbacks: true
+    onValueChangeCallbacks: true
+    onFinishedCallbacks: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      _renderOrder: 0
+      _inactive: false
+      _playAudio: false
+      _style: PrimaryNeutral
+      _toggleable: false
+      _defaultToOn: false
+      addCallbacks: false
+      triggerUpCallbacks:
+        []
+      triggerDownCallbacks:
+        []
+      onValueChangeCallbacks:
+        []
+      onFinishedCallbacks:
+        []
+      _width: !<float> 2.000000
+  ScriptTypes:
+    "":
+      {}
+- !<SceneObject/91a37c2f-78d1-42e5-7b94-75b595d098a3>
+  PrefabRemaps:
+    []
+  Name: Icon
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 61f6bba6-dd64-44f1-60c5-16c5be9c3284
+- !<TypeScriptAssetData/935ede8a-a636-4c34-a8b5-a87bab60dc46>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 501ad603-8669-4d4e-9a89-47ef1c21d4ed
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    buttonHorizontalSpacing: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - buttonHorizontalSpacing: !<float> 1.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input float buttonHorizontalSpacing = 1
+- !<SceneObject/c1e105f3-93b6-4ca1-45d4-fe84d10fb94b>
+  PrefabRemaps:
+    []
+  Name: HandDockedMenu
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 4bf8c289-b2f8-4dd2-66f3-4e64561e7e9f
+  Components:
+    - !<own> 1d7d9ef6-5a82-4066-410a-37616a44cde7
+- !<AssetImportMetadata/ecac45ad-290d-0709-50af-0cd1e7bb5276>
+  ImportedAssetIds:
+    {}
+  ImporterName: NativePackageImporter
+  PrimaryAsset: !<reference> c68a55e7-4be4-4f9d-82df-ef5fc0f45505
+  PackageType: PackedNativePackageRoot
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<AssetImportMetadata/fb6fa736-6e8b-5390-a064-13368ecde129>
+  ImportedAssetIds:
+    NativePackageDescriptor: !<reference> 978f4927-55af-4781-abe1-8cf6ed462778
+  ImporterName: NativePackageDescriptorImporter
+  PrimaryAsset: !<reference> 978f4927-55af-4781-abe1-8cf6ed462778
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
