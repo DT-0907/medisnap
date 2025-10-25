@@ -1,5 +1,6 @@
 # External dependencies (not part of this project)
 marvin/
+medisnap/
 
 # Node modules
 node_modules/
