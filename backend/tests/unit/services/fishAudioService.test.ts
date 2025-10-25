@@ -3,7 +3,6 @@ import {
   generateTTS,
   selectVoice,
   getCachedTTS,
-  FishAudioServiceError,
 } from '../../../src/services/fishAudioService';
 
 describe('Fish Audio TTS Service', () => {
@@ -18,17 +17,17 @@ describe('Fish Audio TTS Service', () => {
       expect(process.env.FISH_AUDIO_API_KEY?.length).toBeGreaterThan(0);
     });
 
-    it('should throw error if API key missing', () => {
+    it('should throw error if API key missing', async () => {
       const originalKey = process.env.FISH_AUDIO_API_KEY;
-      delete process.env.FISH_AUDIO_API_KEY;
+      const originalDemo = process.env.DEMO_MODE;
 
-      expect(() => {
-        jest.resetModules();
-        require('../../../src/services/fishAudioService');
-      }).toThrow('FISH_AUDIO_API_KEY');
+      delete process.env.FISH_AUDIO_API_KEY;
+      delete process.env.DEMO_MODE;
+
+      await expect(generateTTS('test')).rejects.toThrow('FISH_AUDIO_API_KEY');
 
       process.env.FISH_AUDIO_API_KEY = originalKey;
-      jest.resetModules();
+      process.env.DEMO_MODE = originalDemo;
     });
   });
 
