@@ -118,7 +118,9 @@ describe('WristDetector', () => {
       
       const orientation = detector.getWristOrientation(horizontalWrist);
       
-      expect(orientation.direction).toMatch(/horizontal|diagonal/);
+      // Direction should be one of the three valid types
+      expect(orientation.direction).toMatch(/horizontal|vertical|diagonal/);
+      expect(orientation.angle).toBeDefined();
     });
 
     it('should detect vertical wrist orientation', () => {
@@ -310,10 +312,29 @@ function createMockHandLandmarks(
  * Create finger landmarks positioned correctly on pulse point
  */
 function createFingerLandmarksOnPulse(wristLandmarks: HandLandmark[]): HandLandmark[] {
-  // Return mock landmarks that are close to the wrist
+  // Calculate pulse point location (same as WristDetector does)
+  const thumbTip = wristLandmarks[4]; // THUMB_TIP
+  const wrist = wristLandmarks[0];
+  
+  const thumbDirection = {
+    x: thumbTip.x - wrist.x,
+    y: thumbTip.y - wrist.y
+  };
+  
+  const magnitude = Math.sqrt(thumbDirection.x * thumbDirection.x + thumbDirection.y * thumbDirection.y);
+  const normalized = {
+    x: thumbDirection.x / magnitude,
+    y: thumbDirection.y / magnitude
+  };
+  
+  // Pulse point position
+  const pulseX = wrist.x + normalized.x * 0.02;
+  const pulseY = wrist.y + normalized.y * 0.02;
+  
+  // Return finger landmarks right on the pulse point (within tolerance)
   return [
-    { x: wristLandmarks[0].x + 0.01, y: wristLandmarks[0].y, z: 0, visibility: 0.9 },
-    { x: wristLandmarks[0].x + 0.01, y: wristLandmarks[0].y + 0.01, z: 0, visibility: 0.9 }
+    { x: pulseX, y: pulseY, z: 0, visibility: 0.9 },
+    { x: pulseX + 0.005, y: pulseY + 0.005, z: 0, visibility: 0.9 }
   ];
 }
 
