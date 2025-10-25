@@ -1,0 +1,13 @@
+- !<AssetCache>
+  AssetFiles:
+    1aba3240-c944-4fa4-92e6-e8ababca7787: c9d916e8-2bdf-4029-e696-c3a752e120c0/53cc1d8484dba7f56843ec27dff6b06e/Data/SimpleRefl_05.jpg
+  Assets:
+    - !<FileTexture/1aba3240-c944-4fa4-92e6-e8ababca7787>
+      PackagePath: ""
+      FileInfo: !<FileTextureInfo>
+        Width: 256
+        Height: 256
+  SourceHash: 53cc1d8484dba7f56843ec27dff6b06e
+  FileHash: fbbe734d1cf2097160770e30fa02583f
+  NativePackageItems:
+    []

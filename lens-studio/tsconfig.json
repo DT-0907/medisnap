@@ -1,0 +1,73 @@
+{
+  "compilerOptions": {
+    // Lens Studio JavaScript engine compatibility
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+
+    // Output configuration
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    // Type checking
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    // Additional checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Module resolution
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
+    // Decorators (for @input annotations)
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // CRITICAL: Preserve @input comments for Lens Studio
+    "removeComments": false,
+
+    // Source maps for debugging
+    "sourceMap": true,
+    "inlineSources": true,
+
+    // Declaration files
+    "declaration": true,
+    "declarationMap": true,
+
+    // Path aliases
+    "baseUrl": "./src",
+    "paths": {
+      "@types/*": ["types/*"],
+      "@ar-overlays/*": ["AROverlays/*"],
+      "@voice/*": ["Voice/*"],
+      "@state/*": ["State/*"],
+      "@clinical/*": ["Clinical/*"],
+      "@network/*": ["Network/*"]
+    },
+
+    // Other options
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

@@ -1,0 +1,47 @@
+- !<AssetImportMetadata/0487d762-9b72-4a89-b1c5-84c02cc14e91>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 65b3a881-c4c9-4e21-b495-59ff1e30c3ee
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 65b3a881-c4c9-4e21-b495-59ff1e30c3ee
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> aa907792-eae0-4f41-917d-d1f991f8df8a
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/aa907792-eae0-4f41-917d-d1f991f8df8a>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: d7507ba8-9b99-477b-b9ff-b6e851328e9b
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    debugText: false
+    microphoneRecorder: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - microphoneRecorder: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+      debugText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType microphoneRecorder
+    - // @input Component.Text debugText

@@ -1,0 +1,13 @@
+- !<AssetCache>
+  AssetFiles:
+    d33abc41-393f-476d-a667-5cf0afe9ec62: 42d2d4ac-6e10-9cd4-7ecb-d92b5ba7eb2b/2d1af6d8319be396f7be435a629ecd62/Data/Close.png
+  Assets:
+    - !<FileTexture/d33abc41-393f-476d-a667-5cf0afe9ec62>
+      PackagePath: ""
+      FileInfo: !<FileTextureInfo>
+        Width: 96
+        Height: 96
+  SourceHash: 2d1af6d8319be396f7be435a629ecd62
+  FileHash: e464faec9ccdecac162d5553bd31fcb9
+  NativePackageItems:
+    []

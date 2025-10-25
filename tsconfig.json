@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "isolatedModules": true,
+    "lib": [
+      "es2021"
+    ],
+    "module": "commonjs",
+    "noEmit": true,
+    "paths": {
+      "*": [
+        "./Assets/*",
+        "./Packages/*",
+        "./Cache/TypeScript/Src/Packages/*"
+      ],
+      "HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/*": [
+        "./Assets/HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/*",
+        "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/*"
+      ],
+      "HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/*": [
+        "./Assets/HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/*",
+        "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/*"
+      ]
+    },
+    "skipDefaultLibCheck": true,
+    "target": "es2021",
+    "types": []
+  },
+  "exclude": [
+    "node_modules/typescript/lib/lib.dom.d.ts"
+  ],
+  "include": [
+    "./Cache/TypeScript/lib/LensifyTS/Declarations/**/*.d.ts",
+    "./Assets/**/*.ts",
+    "./Packages/**/*.ts",
+    "./Cache/TypeScript/Src/Packages/**/*.ts",
+    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/**/*.ts",
+    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/**/*.ts"
+  ]
+}

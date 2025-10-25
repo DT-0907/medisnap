@@ -1,0 +1,13 @@
+- !<AssetCache>
+  AssetFiles:
+    67280ea1-de9e-4e6e-864b-509007c6219c: 5e558ae5-09ee-761d-7dd6-00696d5d8819/04c1c972d04333232eabd000bd01e60a/Data/SimpleIdle_05.jpg
+  Assets:
+    - !<FileTexture/67280ea1-de9e-4e6e-864b-509007c6219c>
+      PackagePath: ""
+      FileInfo: !<FileTextureInfo>
+        Width: 256
+        Height: 256
+  SourceHash: 04c1c972d04333232eabd000bd01e60a
+  FileHash: a370546d5c33fbc295de6a3fd8c8befc
+  NativePackageItems:
+    []

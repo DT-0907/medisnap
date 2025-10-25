@@ -1,0 +1,13 @@
+- !<AssetCache>
+  AssetFiles:
+    5a69ebdf-5122-48d7-b641-3c4ae96771e6: 325e5a05-dcef-bb9e-1281-d56539668af3/015c6d9fa69cd89e3eb03a84326e5bb7/Data/resummon.png
+  Assets:
+    - !<FileTexture/5a69ebdf-5122-48d7-b641-3c4ae96771e6>
+      PackagePath: ""
+      FileInfo: !<FileTextureInfo>
+        Width: 124
+        Height: 145
+  SourceHash: 015c6d9fa69cd89e3eb03a84326e5bb7
+  FileHash: c90b032317e8510302dda6c0f80bf832
+  NativePackageItems:
+    []
