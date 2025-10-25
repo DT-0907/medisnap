@@ -10,8 +10,8 @@
  * - AR-4: Animations (300ms fade, 10s auto-hide)
  */
 
-const PatientCardRenderer = require('../lens-studio-mock/patientCardRenderer');
-const demoPatientData = require('../../config/demo_patient_data.json');
+const PatientCardRenderer = require('../../lens-studio-mock/patientCardRenderer');
+const demoPatientData = require('../../../config/demo_patient_data.json');
 
 describe('Patient Card Renderer', () => {
   let renderer;
@@ -67,9 +67,9 @@ describe('Patient Card Renderer', () => {
       expect(state.history).toContain('Seasonal allergies');
       expect(state.history).toContain('Annual checkup - healthy');
       expect(state.history).toContain('Atrial fibrillation');
-      // Should show 3 most recent diagnoses
+      // Should show 3 most recent diagnoses (plus header = 4 lines total)
       const historyLines = state.history.split('\n').filter(line => line.trim());
-      expect(historyLines.length).toBeLessThanOrEqual(3);
+      expect(historyLines.length).toBeLessThanOrEqual(4); // Header + 3 entries
     });
 
     /**
