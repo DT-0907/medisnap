@@ -22,6 +22,8 @@ const AR_COLORS = {
 const TIMEOUTS = {
   CLINICAL_MODE_INACTIVITY: 120000,  // 120s = 2 minutes (FR-12a)
   TRAINING_MODE_INACTIVITY: 10000,   // 10s (Dev 1)
+  CLINICAL_AUTO_EXIT: 120000,        // 120s = 2 minutes (FR-12a) - alias for Mode Manager
+  TRAINING_AUTO_EXIT: 10000,         // 10s (FR-5a) - alias for Mode Manager
   PATIENT_CARD_AUTO_HIDE: 10000,     // 10s (FR-13)
   PRESCRIPTION_UI_AUTO_HIDE: 5000,   // 5s (FR-26)
   IN_SESSION_SILENCE: 30000          // 30s (FR-27a)
