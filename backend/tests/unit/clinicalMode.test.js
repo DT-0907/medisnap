@@ -88,7 +88,13 @@ describe('Clinical Mode State Machine', () => {
     });
 
     test('1.2: Should transition IDLE → AWAITING_PATIENT on "start assessment"', async () => {
-      await clinicalMode.handleVoiceCommand('start assessment Sarah Chen');
+      // Mock patient loading to prevent immediate state change
+      mockApiClient.post.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+      clinicalMode.handleVoiceCommand('start assessment Sarah Chen'); // Don't await
+
+      // Give time for state transition
+      await Promise.resolve();
 
       expect(clinicalMode.getState()).toBe('AWAITING_PATIENT');
       expect(mockVoiceController.playTTS).toHaveBeenCalledWith(
@@ -121,14 +127,24 @@ describe('Clinical Mode State Machine', () => {
     test('1.4: Should transition PATIENT_LOADED → RECORDING_SYMPTOMS on "record symptom"', async () => {
       // Setup: Load patient first
       const mockPatient = { name: 'Sarah Chen', age: 34 };
-      mockApiClient.post.mockResolvedValueOnce({ data: { patient: mockPatient } });
+      mockApiClient.post
+        .mockResolvedValueOnce({ data: { patient: mockPatient } })
+        .mockResolvedValueOnce({ data: { success: true } }) // symptom recording
+        .mockResolvedValueOnce({ data: { suggestions: [] } }); // decision support
       await clinicalMode.handleVoiceCommand('start assessment Sarah Chen');
       await jest.runAllTimersAsync();
 
-      // Test: Record symptom
-      await clinicalMode.handleVoiceCommand('record symptom chest tightness');
+      // Test: Record symptom - don't await completion
+      const recordPromise = clinicalMode.handleVoiceCommand('record symptom chest tightness');
+
+      // Give time for state change but before completion
+      await Promise.resolve();
 
       expect(clinicalMode.getState()).toBe('RECORDING_SYMPTOMS');
+
+      // Wait for completion
+      await recordPromise;
+
       expect(mockVoiceController.playTTS).toHaveBeenCalledWith(
         expect.stringContaining('Recorded symptom')
       );
@@ -170,7 +186,9 @@ describe('Clinical Mode State Machine', () => {
       mockApiClient.post.mockRejectedValueOnce(new Error('Network error'));
 
       await clinicalMode.handleVoiceCommand('start assessment Sarah Chen');
-      await jest.runAllTimersAsync();
+
+      // Wait for the error to be handled
+      await Promise.resolve();
 
       expect(clinicalMode.getState()).toBe('ERROR');
       expect(mockVoiceController.playTTS).toHaveBeenCalledWith(
