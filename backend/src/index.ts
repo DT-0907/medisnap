@@ -30,10 +30,15 @@ app.get('/', (_req: Request, res: Response) => {
     version: '0.1.0',
     endpoints: {
       health: '/health',
+      training: '/api/training',
       docs: 'Coming soon',
     },
   });
 });
+
+// API Routes
+import trainingRoutes from './routes/training';
+app.use('/api/training', trainingRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
