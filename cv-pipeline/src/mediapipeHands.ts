@@ -2,6 +2,12 @@
  * MediaPipe Hands Detector Implementation
  * Based on MediaPipe Hands v0.9+ via @mediapipe/tasks-vision
  * 
+ * MODEL FORMAT: TFLite (.task) - SnapML Compatible ✅
+ * - Downloaded from: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+ * - Location: ./models/hand_landmarker.task (7.5 MB)
+ * - Format: TensorFlow Lite wrapped in .task format
+ * - SnapML: Can be imported directly into Lens Studio
+ * 
  * Requirements implemented:
  * - FR-32: MediaPipe Hands v0.9+ for hand detection
  * - FR-33: Single-person detection (max 1 hand tracked)
@@ -35,7 +41,7 @@ export class MediaPipeHandsDetector {
   constructor(config: MediaPipeConfig = {}) {
     // Default configuration per FR-32
     this.config = {
-      modelPath: config.modelPath || 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+      modelPath: config.modelPath || './models/hand_landmarker.task',  // Local model for SnapML compatibility
       minDetectionConfidence: config.minDetectionConfidence ?? 0.7,
       minTrackingConfidence: config.minTrackingConfidence ?? 0.7,
       maxNumHands: config.maxNumHands ?? 1  // FR-33: Single-person detection
@@ -44,7 +50,8 @@ export class MediaPipeHandsDetector {
 
   /**
    * Initialize MediaPipe Hands model
-   * Loads model from CDN (no local download required)
+   * Loads local model (TFLite .task format)
+   * NOTE: This .task file is SnapML-compatible and can be imported directly into Lens Studio
    */
   async initialize(): Promise<void> {
     try {

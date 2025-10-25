@@ -3,7 +3,8 @@
 **Version:** MediaPipe Hands v0.9+ (via @mediapipe/tasks-vision v0.10.22+)  
 **Developer:** Dev 4 - Data, CV & Integration Owner  
 **Branch:** CV  
-**Timeline:** Hours 6-18 (12 hours)
+**Timeline:** Hours 6-18 (12 hours)  
+**Model Format:** TFLite (.task) - ☑️ **SnapML Compatible**
 
 ## Overview
 
@@ -12,14 +13,29 @@ This module implements computer vision hand detection for the MedSnap AR Medical
 1. **Hand Detection**: Real-time hand landmark detection with retry logic
 2. **Wrist Identification**: Locates wrist position for pulse-taking training
 3. **Finger Placement Validation**: Checks finger positioning on radial pulse point
-4. **Vital Sign OCR** (Optional): Reads vital signs from digital monitors
+4. **Pressure Detection**: Estimates hand pressure via tension heuristics
+5. **SnapML Integration**: Ready for Snap Spectacles deployment
+6. **Vital Sign OCR** (Optional): Reads vital signs from digital monitors
+
+## 🚀 **SnapML Integration**
+
+📖 **[See SnapML Integration Guide](SNAPML_INTEGRATION_GUIDE.md)** for complete Lens Studio integration instructions.
+
+The MediaPipe Hands model (`models/hand_landmarker.task`) is **TensorFlow Lite format**, which is **directly compatible** with SnapML. No conversion needed!
+
+- **Model File:** `models/hand_landmarker.task` (7.5 MB)
+- **Format:** TFLite wrapped in .task format
+- **Source:** https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/
+- **SnapML:** ✅ Import directly into Lens Studio
+- **JavaScript Ports:** Logic ported to Lens Studio-compatible JavaScript (see SNAPML_INTEGRATION_GUIDE.md)
 
 ## Technology Stack
 
 - **MediaPipe Hands v0.9+**: Hand landmark detection (21 landmarks per hand)
 - **TypeScript**: Strict type checking enabled
 - **Jest + ts-jest**: Test-driven development framework
-- **CDN Loading**: Models loaded from MediaPipe CDN (no local download required)
+- **Local Model**: TFLite model downloaded for SnapML compatibility
+- **ONNX Runtime**: Installed for future backend processing options
 
 ## Configuration (FR-32)
 
@@ -53,7 +69,7 @@ cv-pipeline/
 ├── src/
 │   ├── mediapipeHands.ts       # Core MediaPipe integration
 │   ├── wristDetection.ts       # Wrist landmark logic
-│   ├── fingerPlacement.ts      # Finger position validation
+│   ├── pressureDetection.ts    # Pressure detection via hand tension heuristics
 │   ├── vitalSignOCR.ts         # OCR for monitors (optional)
 │   ├── utils/
 │   │   ├── retry.ts            # Retry logic with timeout
@@ -66,7 +82,8 @@ cv-pipeline/
 │   ├── unit/                   # Unit tests
 │   ├── integration/            # Integration tests
 │   └── fixtures/               # Test images and data
-├── models/                     # (Not used with CDN loading)
+├── models/                     # MediaPipe Hands model (.task file)
+│   └── hand_landmarker.task   # TFLite model (7.5 MB, SnapML-compatible)
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.js
