@@ -45,6 +45,21 @@ function switchMode(newMode) {
     print("ModeManager: Current mode: " + currentMode);
   }
 
+  // Validate mode
+  var validModes = [config.MODE.IDLE, config.MODE.TRAINING, config.MODE.CLINICAL];
+  var isValidMode = false;
+  for (var i = 0; i < validModes.length; i++) {
+    if (validModes[i] === newMode) {
+      isValidMode = true;
+      break;
+    }
+  }
+
+  if (!isValidMode) {
+    print("ERROR: Invalid mode '" + newMode + "'. Valid modes: idle, training, clinical");
+    return; // Don't change mode
+  }
+
   // FR-12b: If not in idle, auto-exit current mode first
   if (currentMode !== config.MODE.IDLE) {
     exitCurrentMode();

@@ -39,6 +39,12 @@ class ModeManager {
    * @param {string} newMode - 'idle', 'training', or 'clinical'
    */
   switchMode(newMode) {
+    // Validate mode
+    const validModes = Object.values(this.config.MODE);
+    if (!validModes.includes(newMode)) {
+      throw new Error(`Invalid mode: ${newMode}. Valid modes: ${validModes.join(', ')}`);
+    }
+
     // FR-12b: If not in idle, auto-exit current mode first
     if (this.state.currentMode !== this.config.MODE.IDLE) {
       this.exitCurrentMode();

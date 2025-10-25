@@ -42,6 +42,15 @@ describe('Mode Manager', () => {
       expect(modeManager.isInClinicalMode()).toBe(false);
     });
 
+    test('1.1b: Should reject invalid mode strings', () => {
+      expect(() => {
+        modeManager.switchMode('invalid_mode');
+      }).toThrow('Invalid mode: invalid_mode');
+
+      // Should remain in idle mode after rejection
+      expect(modeManager.getCurrentMode()).toBe('idle');
+    });
+
     test('1.2: Should switch from IDLE to TRAINING mode', () => {
       modeManager.switchMode('training');
 
