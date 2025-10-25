@@ -1,6 +1,9 @@
 /**
- * Dev 2 Task 2.2: Patient Card Renderer
- * Renders patient information in AR overlay
+ * Task Group 5: Patient Card Renderer
+ * Dev 2 - Clinical Mode AR UI
+ *
+ * Renders patient information in AR overlay with proper positioning,
+ * styling, and auto-hide functionality
  */
 
 // @input Component.Text patientNameText
@@ -12,8 +15,9 @@
 // @input Component.Text chiefComplaintText
 // @input Component.Text symptomsText
 // @input Component.Image cardBackground
+// @input Component.ScreenTransform cardTransform
 // @input SceneObject cardRootObject
-// @input bool debugMode = true
+// @input bool debugMode = false
 
 // Get config
 const config = global.MedSnapConfig;
@@ -23,7 +27,7 @@ if (!config) {
   throw new Error("MedSnapConfig not loaded");
 }
 
-print("PatientCardRenderer loaded - Task 2.2 implementation active");
+print("PatientCardRenderer loaded - Task Group 5 implementation");
 
 if (script.debugMode) {
   print("Debug: Allergy text color: " + JSON.stringify(config.AR_COLORS.ALLERGY_TEXT));
@@ -35,9 +39,51 @@ var isCardVisible = false;
 var autoHideTimer = null;
 var currentPatientData = null;
 var currentViewMode = 'all'; // 'all', 'history', 'medications', 'allergies'
+var fadeAnimationTimer = null;
+
+// Initialize card positioning and styling (Task 5.3)
+function initializeCard() {
+  // Position card at top center (Task 5.3 - FR AR-3)
+  if (script.cardTransform) {
+    script.cardTransform.anchors.setCenter(0.5, 0.9); // Top 1/3 of screen
+    script.cardTransform.anchors.setSize(500, 400); // Fixed size for consistency
+  }
+
+  // Set semi-transparent background (Task 5.4 - 50% opacity)
+  if (script.cardBackground) {
+    script.cardBackground.mainPass.baseColor = config.AR_COLORS.CARD_BG;
+  }
+
+  // Ensure minimum font sizes (Task 5.3 - FR AR-2)
+  ensureMinimumFontSizes();
+
+  // Initially hide the card
+  hideCardImmediate();
+}
+
+// Ensure all text components meet minimum font size requirement (Task 5.3)
+function ensureMinimumFontSizes() {
+  const minSize = config.TYPOGRAPHY.MIN_FONT_SIZE; // 18pt minimum
+  const textComponents = [
+    script.patientNameText,
+    script.patientDetailsText,
+    script.allergiesText,
+    script.medicationsText,
+    script.historyText,
+    script.vitalsText,
+    script.chiefComplaintText,
+    script.symptomsText
+  ];
+
+  textComponents.forEach(function(textComponent) {
+    if (textComponent && textComponent.size < minSize) {
+      textComponent.size = minSize;
+    }
+  });
+}
 
 /**
- * Render patient card with all data
+ * Render patient card with all data (Task 5.2, 5.3, 5.4)
  * @param {Object} patientData - Patient data object from backend/demo
  * @param {string} viewMode - 'all', 'history', 'medications', or 'allergies'
  */
@@ -55,29 +101,40 @@ function renderPatientCard(patientData, viewMode) {
     print("PatientCardRenderer: Rendering card for " + patientData.name + " (mode: " + viewMode + ")");
   }
 
-  // 1. Patient name
+  // Task 5.2: Create AR text components with patient data
+  // Information hierarchy per FR-13:
+  // 1. Patient name, age, sex
   script.patientNameText.text = patientData.name;
-
-  // 2. Patient age and sex
   script.patientDetailsText.text = "Age " + patientData.age + ", " + patientData.sex;
 
-  // 3. Allergies (prominent, RED per AR-1)
+  // 2. Allergies (prominent, RED per AR-1) - Task 5.4
   if (patientData.allergies && patientData.allergies.length > 0) {
     script.allergiesText.text = "Allergies: " + patientData.allergies.join(', ');
-    script.allergiesText.textFill.color = config.AR_COLORS.ALLERGY_TEXT; // RED
   } else {
     script.allergiesText.text = "Allergies: None";
-    script.allergiesText.textFill.color = config.AR_COLORS.ALLERGY_TEXT; // Still RED per FR-13
+  }
+  // Always show allergies in RED (Task 5.4)
+  script.allergiesText.textFill.color = config.AR_COLORS.ALLERGY_TEXT; // RED
+
+  // Add red border effect for allergy warnings (Task 5.4)
+  if (patientData.allergies && patientData.allergies.length > 0) {
+    // Create visual emphasis for allergies
+    script.allergiesText.size = 20; // Slightly larger than minimum
+    if (script.allergiesText.getSceneObject()) {
+      // Add drop shadow for readability (Task 5.4)
+      script.allergiesText.dropshadowSettings.enabled = true;
+      script.allergiesText.dropshadowSettings.offset = new vec2(2, 2);
+    }
   }
 
-  // 4. Chief complaint
+  // 3. Chief complaint
   if (patientData.chief_complaint) {
     script.chiefComplaintText.text = "Chief Complaint: " + patientData.chief_complaint;
   } else {
     script.chiefComplaintText.text = "";
   }
 
-  // 5. Current symptoms (initially empty, updated via updateCardField)
+  // 4. Current symptoms
   if (patientData.current_symptoms && patientData.current_symptoms.length > 0) {
     var symptomsText = "Current Symptoms:\n";
     for (var i = 0; i < patientData.current_symptoms.length; i++) {
@@ -88,7 +145,7 @@ function renderPatientCard(patientData, viewMode) {
     script.symptomsText.text = "";
   }
 
-  // 6. Vital signs
+  // 5. Vital signs
   if (patientData.current_vitals) {
     var v = patientData.current_vitals;
     var vitalParts = [];
@@ -105,7 +162,7 @@ function renderPatientCard(patientData, viewMode) {
     script.vitalsText.text = "Vitals: Not recorded";
   }
 
-  // 7. Medications
+  // 6. Medications (Task 5.2)
   if (patientData.medications && patientData.medications.length > 0) {
     var medText = "Medications:\n";
     for (var j = 0; j < patientData.medications.length; j++) {
@@ -117,7 +174,7 @@ function renderPatientCard(patientData, viewMode) {
     script.medicationsText.text = "Medications: None";
   }
 
-  // 8. Diagnosis history (last 3 visits)
+  // 7. Diagnosis history (last 3 visits)
   if (patientData.diagnosis_history && patientData.diagnosis_history.length > 0) {
     var historyText = "Recent Diagnoses:\n";
     var historyCount = Math.min(3, patientData.diagnosis_history.length);
@@ -131,13 +188,13 @@ function renderPatientCard(patientData, viewMode) {
     script.historyText.text = "Recent Diagnoses: None";
   }
 
-  // Apply view mode filters
+  // Task 5.6: Apply view mode filters
   applyViewMode(viewMode);
 
-  // Show card with fade-in animation
+  // Task 5.4: Show card with fade-in animation (0.5s)
   fadeIn();
 
-  // Start auto-hide timer (10 seconds per FR-13)
+  // Task 5.5: Start auto-hide timer (10 seconds per FR-13)
   startAutoHideTimer();
 
   isCardVisible = true;
@@ -179,7 +236,7 @@ function updateCardField(fieldName, value) {
     case 'symptoms':
       if (typeof value === 'string') {
         script.symptomsText.text = "Current Symptoms: " + value;
-      } else {
+      } else if (Array.isArray(value)) {
         var symptomsText = "Current Symptoms:\n";
         for (var i = 0; i < value.length; i++) {
           symptomsText += "- " + value[i] + "\n";
@@ -202,12 +259,12 @@ function updateCardField(fieldName, value) {
       print("ERROR: Unknown field: " + fieldName);
   }
 
-  // Restart auto-hide timer
+  // Task 5.5: Reset auto-hide timer on interaction
   startAutoHideTimer();
 }
 
 /**
- * Hide patient card with fade-out animation
+ * Hide patient card with fade-out animation (Task 5.4)
  */
 function hidePatientCard() {
   if (script.debugMode) {
@@ -220,7 +277,16 @@ function hidePatientCard() {
 }
 
 /**
- * Show patient card (manual recall from voice command)
+ * Hide card immediately without animation
+ */
+function hideCardImmediate() {
+  script.cardRootObject.enabled = false;
+  isCardVisible = false;
+  clearAutoHideTimer();
+}
+
+/**
+ * Show patient card - manual recall from voice command (Task 5.5)
  */
 function showPatientCard() {
   if (!currentPatientData) {
@@ -236,7 +302,7 @@ function showPatientCard() {
 }
 
 /**
- * Show patient history view
+ * Show patient history view (Task 5.6)
  */
 function showPatientHistory() {
   if (!currentPatientData) {
@@ -248,7 +314,7 @@ function showPatientHistory() {
 }
 
 /**
- * Show medications view
+ * Show medications view (Task 5.6)
  */
 function showMedications() {
   if (!currentPatientData) {
@@ -260,7 +326,7 @@ function showMedications() {
 }
 
 /**
- * Show allergies view (enlarged)
+ * Show allergies view - enlarged (Task 5.6)
  */
 function showAllergies() {
   if (!currentPatientData) {
@@ -270,14 +336,15 @@ function showAllergies() {
 
   renderPatientCard(currentPatientData, 'allergies');
 
-  // Enlarge allergy text
-  script.allergiesText.size = 28; // Larger than default 20pt
+  // Task 5.6: Enlarge allergy text for emphasis
+  script.allergiesText.size = 28; // Larger than default 18-20pt
 }
 
 // --- Private Functions ---
 
 /**
- * Apply view mode filters (show/hide specific sections)
+ * Apply view mode filters - Task 5.6
+ * Show/hide specific sections based on mode
  */
 function applyViewMode(viewMode) {
   // Get parent SceneObjects for each text component
@@ -300,8 +367,10 @@ function applyViewMode(viewMode) {
   chiefComplaintObj.enabled = true;
   symptomsObj.enabled = true;
 
+  // Task 5.6: Filter based on view mode
   switch (viewMode) {
     case 'history':
+      // Show only name, details, and history
       allergiesObj.enabled = false;
       medicationsObj.enabled = false;
       vitalsObj.enabled = false;
@@ -310,6 +379,7 @@ function applyViewMode(viewMode) {
       break;
 
     case 'medications':
+      // Show only name, details, and medications
       allergiesObj.enabled = false;
       historyObj.enabled = false;
       vitalsObj.enabled = false;
@@ -318,6 +388,7 @@ function applyViewMode(viewMode) {
       break;
 
     case 'allergies':
+      // Show only name, details, and allergies (enlarged)
       medicationsObj.enabled = false;
       historyObj.enabled = false;
       vitalsObj.enabled = false;
@@ -333,35 +404,111 @@ function applyViewMode(viewMode) {
 }
 
 /**
- * Fade in animation (300ms per AR-4)
+ * Fade in animation - Task 5.4 (0.5s per spec)
  */
 function fadeIn() {
+  clearFadeAnimation();
+
   script.cardRootObject.enabled = true;
 
-  // TODO: Implement smooth fade-in using TweenManager or AnimateProperty
-  // For now, just enable the object
+  // Animate opacity from 0 to 1 over 0.5 seconds
+  if (script.cardBackground) {
+    var startOpacity = 0;
+    var targetOpacity = 0.5; // Semi-transparent background
+    var duration = 0.5; // 500ms
+    var elapsed = 0;
+
+    var fadeInEvent = script.createEvent("UpdateEvent");
+    fadeInEvent.bind(function(eventData) {
+      elapsed += eventData.getDeltaTime();
+      var progress = Math.min(elapsed / duration, 1);
+
+      // Ease-in-out interpolation
+      var eased = progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
+
+      var currentOpacity = startOpacity + (targetOpacity - startOpacity) * eased;
+
+      if (script.cardBackground.mainPass) {
+        var color = script.cardBackground.mainPass.baseColor;
+        color.a = currentOpacity;
+        script.cardBackground.mainPass.baseColor = color;
+      }
+
+      if (progress >= 1) {
+        fadeInEvent.enabled = false;
+      }
+    });
+
+    fadeAnimationTimer = fadeInEvent;
+  }
 
   if (script.debugMode) {
-    print("PatientCardRenderer: Fade in (placeholder)");
+    print("PatientCardRenderer: Fade in animation started (0.5s)");
   }
 }
 
 /**
- * Fade out animation (300ms per AR-4)
+ * Fade out animation - Task 5.4 (0.5s per spec)
  */
 function fadeOut() {
-  // TODO: Implement smooth fade-out using TweenManager or AnimateProperty
-  // For now, just disable the object
+  clearFadeAnimation();
 
-  script.cardRootObject.enabled = false;
+  // Animate opacity from current to 0 over 0.5 seconds
+  if (script.cardBackground) {
+    var startOpacity = 0.5;
+    var targetOpacity = 0;
+    var duration = 0.5; // 500ms
+    var elapsed = 0;
+
+    var fadeOutEvent = script.createEvent("UpdateEvent");
+    fadeOutEvent.bind(function(eventData) {
+      elapsed += eventData.getDeltaTime();
+      var progress = Math.min(elapsed / duration, 1);
+
+      // Ease-in-out interpolation
+      var eased = progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
+
+      var currentOpacity = startOpacity + (targetOpacity - startOpacity) * eased;
+
+      if (script.cardBackground.mainPass) {
+        var color = script.cardBackground.mainPass.baseColor;
+        color.a = currentOpacity;
+        script.cardBackground.mainPass.baseColor = color;
+      }
+
+      if (progress >= 1) {
+        script.cardRootObject.enabled = false;
+        fadeOutEvent.enabled = false;
+      }
+    });
+
+    fadeAnimationTimer = fadeOutEvent;
+  } else {
+    // Fallback: just hide immediately
+    script.cardRootObject.enabled = false;
+  }
 
   if (script.debugMode) {
-    print("PatientCardRenderer: Fade out (placeholder)");
+    print("PatientCardRenderer: Fade out animation started (0.5s)");
   }
 }
 
 /**
- * Start auto-hide timer (10 seconds)
+ * Clear any active fade animation
+ */
+function clearFadeAnimation() {
+  if (fadeAnimationTimer) {
+    fadeAnimationTimer.enabled = false;
+    fadeAnimationTimer = null;
+  }
+}
+
+/**
+ * Start auto-hide timer - Task 5.5 (10 seconds)
  */
 function startAutoHideTimer() {
   clearAutoHideTimer();
@@ -369,7 +516,7 @@ function startAutoHideTimer() {
   var hideDelay = script.createEvent("DelayedCallbackEvent");
   hideDelay.bind(function() {
     if (script.debugMode) {
-      print("PatientCardRenderer: Auto-hide triggered");
+      print("PatientCardRenderer: Auto-hide triggered after 10 seconds");
     }
     hidePatientCard();
   });
@@ -383,7 +530,7 @@ function startAutoHideTimer() {
  */
 function clearAutoHideTimer() {
   if (autoHideTimer) {
-    autoHideTimer.cancel();
+    autoHideTimer.enabled = false;
     autoHideTimer = null;
   }
 }
@@ -401,6 +548,22 @@ function formatDate(dateString) {
   return dateString; // Fallback
 }
 
+/**
+ * Get current card state (for testing/debugging)
+ */
+function getCardState() {
+  return {
+    visible: isCardVisible,
+    patientData: currentPatientData,
+    viewMode: currentViewMode,
+    position: script.cardTransform ? script.cardTransform.anchors.getCenter() : null,
+    hasAutoHideTimer: autoHideTimer !== null
+  };
+}
+
+// Initialize card on script start
+initializeCard();
+
 // Export functions for other scripts
 script.renderPatientCard = renderPatientCard;
 script.updateCardField = updateCardField;
@@ -409,3 +572,6 @@ script.showPatientCard = showPatientCard;
 script.showPatientHistory = showPatientHistory;
 script.showMedications = showMedications;
 script.showAllergies = showAllergies;
+script.getCardState = getCardState;
+
+print("PatientCardRenderer: Task Group 5 implementation complete");
