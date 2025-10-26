@@ -1,0 +1,26 @@
+{
+  "name": "medsnap-lens-scripts",
+  "version": "1.0.0",
+  "description": "Lens Studio scripts for MedSnap Spectacles application",
+  "scripts": {
+    "test": "jest --config=tests/jest.config.js",
+    "test:watch": "jest --config=tests/jest.config.js --watch",
+    "test:coverage": "jest --config=tests/jest.config.js --coverage",
+    "test:mode-manager": "jest tests/modeManager.test.js --config=tests/jest.config.js",
+    "test:clinical": "jest tests/clinicalMode.test.js --config=tests/jest.config.js",
+    "test:prescription": "jest tests/prescriptionUI.test.js --config=tests/jest.config.js",
+    "test:all": "node tests/runAllTests.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8"
+  },
+  "keywords": [
+    "spectacles",
+    "lens-studio",
+    "ar",
+    "medsnap"
+  ],
+  "author": "MedSnap Team",
+  "license": "MIT"
+}

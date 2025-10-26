@@ -8,7 +8,11 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:all": "node Scripts/tests/runAllTests.js"
   },
   "keywords": [
     "lens-studio",
@@ -24,6 +28,7 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.56.0",
+    "jest": "^30.2.0",
     "typescript": "5.3.3"
   }
 }

@@ -34,7 +34,7 @@
     "./Assets/**/*.ts",
     "./Packages/**/*.ts",
     "./Cache/TypeScript/Src/Packages/**/*.ts",
-    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/**/*.ts",
-    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/**/*.ts"
+    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesUIKit.lspkg/**/*.ts",
+    "./Cache/TypeScript/Src/Assets/HandDockedMenu Refab.lspkg/SpectaclesInteractionKit.lspkg/**/*.ts"
   ]
 }

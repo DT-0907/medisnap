@@ -1,0 +1,48 @@
+- !<AssetImportMetadata/f743141c-7d06-40b3-87e7-74a843d7effb>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> f3c17644-673b-4f76-92fa-c50679c3bacd
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> f3c17644-673b-4f76-92fa-c50679c3bacd
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 770018f5-4268-4623-b56d-2ebc5d6431b9
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/770018f5-4268-4623-b56d-2ebc5d6431b9>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 956d15aa-f0b0-4444-801c-9dafb9ea9564
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    debugMode: false
+    modeManager: false
+    patientCardRenderer: false
+    prescriptionUI: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - modeManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      patientCardRenderer: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      prescriptionUI: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      debugMode: true
+  ScriptTypes:
+    -
+      {}

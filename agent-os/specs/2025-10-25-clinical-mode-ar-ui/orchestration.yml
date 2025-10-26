@@ -1,0 +1,37 @@
+task_groups:
+  - name: Environment & Configuration
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Backend Integration Client
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Application State Manager
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Mode Switching Logic
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Patient Card Renderer
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Clinical State Machine
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Prescription UI
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Component Integration
+    claude_code_subagent: implementer
+    standards:
+      - global/*
+  - name: Sarah Chen Demo Flow
+    claude_code_subagent: implementer
+    standards:
+      - global/*

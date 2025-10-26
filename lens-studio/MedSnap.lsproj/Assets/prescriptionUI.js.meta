@@ -1,0 +1,54 @@
+- !<AssetImportMetadata/012f07ad-2c00-493f-9fdd-c724557aa1d9>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 148aba82-a715-49f9-92a3-41f385eb762e
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 148aba82-a715-49f9-92a3-41f385eb762e
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 7a757598-ac66-4a89-a8b7-a9842d10bf0a
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/7a757598-ac66-4a89-a8b7-a9842d10bf0a>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 563bc617-6069-42f8-b567-6e22e8dbe583
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    alternativesText: false
+    backgroundImage: false
+    badgeText: false
+    debugMode: false
+    iconImage: false
+    messageText: false
+    uiRootObject: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - iconImage: !<reference.Image> 00000000-0000-0000-0000-000000000000
+      messageText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      alternativesText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      badgeText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      backgroundImage: !<reference.Image> 00000000-0000-0000-0000-000000000000
+      uiRootObject: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      debugMode: true
+  ScriptTypes:
+    -
+      {}
