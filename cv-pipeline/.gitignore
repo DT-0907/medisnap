@@ -39,3 +39,12 @@ npm-debug.log*
 *.tmp
 .cache/
 
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Large data files
+data/
+*.mp4
+

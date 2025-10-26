@@ -37,4 +37,12 @@ logs/
 tmp/
 temp/
 
+# Large data files
 data/
+*.mp4
+*.MP4
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
