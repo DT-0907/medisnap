@@ -65,7 +65,7 @@ EXCESSIVE_PRESSURE_THRESHOLD = 0.70
 TOO_LIGHT_THRESHOLD = 0.25
 
 # Pulse point constants (from wristDetection.ts)
-PULSE_POINT_OFFSET = 0.02  # ~2cm in normalized coordinates
+PULSE_POINT_OFFSET = 0.04  # ~4cm in normalized coordinates (below wrist on thumb side)
 PLACEMENT_TOLERANCE = 0.015  # 1.5cm tolerance
 
 def is_nurse_hand(landmarks):
@@ -91,10 +91,11 @@ def is_nurse_hand(landmarks):
 def find_radial_pulse_point(landmarks, img_width, img_height):
     """
     Port of wristDetection.ts:findRadialPulsePoint()
-    Finds the radial pulse point (thumb-side of wrist)
+    Finds the radial pulse point (thumb-side of wrist, slightly below wrist crease)
     """
     wrist = landmarks[WRIST]
     thumb_cmc = landmarks[THUMB_CMC]
+    index_mcp = landmarks[INDEX_FINGER_MCP]
     
     # Calculate thumb-side direction
     dx = thumb_cmc.x - wrist.x
@@ -108,9 +109,30 @@ def find_radial_pulse_point(landmarks, img_width, img_height):
     dx /= magnitude
     dy /= magnitude
     
-    # Offset ~2cm toward thumb
-    pulse_x = wrist.x + dx * PULSE_POINT_OFFSET
-    pulse_y = wrist.y + dy * PULSE_POINT_OFFSET
+    # Calculate downward direction (toward palm/away from arm)
+    # Use index MCP as reference for palm direction
+    palm_dx = index_mcp.x - wrist.x
+    palm_dy = index_mcp.y - wrist.y
+    palm_magnitude = math.sqrt(palm_dx * palm_dx + palm_dy * palm_dy)
+    
+    if palm_magnitude > 0:
+        palm_dx /= palm_magnitude
+        palm_dy /= palm_magnitude
+    
+    # Combine thumb-side direction with slight palm-ward offset
+    # 70% toward thumb, 30% toward palm (anatomically accurate)
+    combined_dx = dx * 0.7 + palm_dx * 0.3
+    combined_dy = dy * 0.7 + palm_dy * 0.3
+    
+    # Normalize combined direction
+    combined_magnitude = math.sqrt(combined_dx * combined_dx + combined_dy * combined_dy)
+    if combined_magnitude > 0:
+        combined_dx /= combined_magnitude
+        combined_dy /= combined_magnitude
+    
+    # Offset ~4cm toward thumb and slightly down from wrist
+    pulse_x = wrist.x + combined_dx * PULSE_POINT_OFFSET
+    pulse_y = wrist.y + combined_dy * PULSE_POINT_OFFSET
     
     # Convert to pixel coordinates
     return (
@@ -412,7 +434,7 @@ def process_video(input_path, output_path):
     
     # Pressure smoothing buffer
     pressure_history = []
-    pressure_smoothing_window = 10  # Smooth over 10 frames
+    pressure_smoothing_window = 5  # Smooth over 5 frames (more sensitive)
     
     # Initialize MediaPipe Hands
     with mp_hands.Hands(
