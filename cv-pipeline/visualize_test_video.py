@@ -241,7 +241,7 @@ def draw_arrow(img, start, end, color, thickness=2):
 
 def draw_text_with_background(img, text, position, font_scale=0.6, thickness=2, 
                                 bg_color=(0, 0, 0), text_color=(255, 255, 255), 
-                                alpha=1.0, padding=8, rounded=False):
+                                alpha=1.0, padding=8, rounded=False, font_style='duplex'):
     """
     Draw text with a background rectangle for better visibility
     
@@ -256,8 +256,17 @@ def draw_text_with_background(img, text, position, font_scale=0.6, thickness=2,
         alpha: Background transparency (0.0-1.0, where 1.0 is opaque)
         padding: Padding around text
         rounded: Whether to use rounded corners
+        font_style: Font style ('simplex', 'duplex', 'triplex', 'complex')
     """
-    font = cv2.FONT_HERSHEY_SIMPLEX
+    # Select font based on style
+    font_map = {
+        'simplex': cv2.FONT_HERSHEY_SIMPLEX,
+        'duplex': cv2.FONT_HERSHEY_DUPLEX,      # Clean, modern
+        'triplex': cv2.FONT_HERSHEY_TRIPLEX,    # Bold, elegant
+        'complex': cv2.FONT_HERSHEY_COMPLEX,    # Decorative
+        'plain': cv2.FONT_HERSHEY_PLAIN         # Very basic
+    }
+    font = font_map.get(font_style, cv2.FONT_HERSHEY_DUPLEX)
     (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
     
     x, y = position
@@ -387,7 +396,7 @@ def process_video(input_path, output_path):
                         # Draw arrow pointing to pulse point
                         arrow_start = (pulse_point[0] + 100, pulse_point[1] - 100)
                         arrow_end = (pulse_point[0] + 25, pulse_point[1] - 25)
-                        draw_arrow(frame, arrow_start, arrow_end, NAVY_BLUE, thickness=3)
+                        draw_arrow(frame, arrow_start, arrow_end, CYAN, thickness=3)
                         
                         # Add instruction text with elegant styling (FR-7)
                         label_pos = (arrow_start[0] - 80, arrow_start[1] - 15)
@@ -398,10 +407,11 @@ def process_video(input_path, output_path):
                             font_scale=0.8,
                             thickness=2,
                             bg_color=OFF_WHITE,
-                            text_color=NAVY_BLUE,
-                            alpha=0.85,
+                            text_color=CYAN,
+                            alpha=0.65,
                             padding=12,
-                            rounded=True
+                            rounded=True,
+                            font_style='duplex'
                         )
                         draw_text_with_background(
                             frame,
@@ -410,10 +420,11 @@ def process_video(input_path, output_path):
                             font_scale=0.8,
                             thickness=2,
                             bg_color=OFF_WHITE,
-                            text_color=NAVY_BLUE,
-                            alpha=0.85,
+                            text_color=CYAN,
+                            alpha=0.65,
                             padding=12,
-                            rounded=True
+                            rounded=True,
+                            font_style='duplex'
                         )
                 
                 # Process nurse hand for pressure tracking
@@ -465,7 +476,8 @@ def process_video(input_path, output_path):
                         text_color=WHITE,
                         alpha=0.85,
                         padding=8,
-                        rounded=True
+                        rounded=True,
+                        font_style='duplex'
                     )
                     
                     # Feedback message (FR-9) with elegant styling
@@ -479,7 +491,8 @@ def process_video(input_path, output_path):
                         text_color=pressure['color'],
                         alpha=0.88,
                         padding=10,
-                        rounded=True
+                        rounded=True,
+                        font_style='duplex'
                     )
                     
                     # Label nurse hand with elegant styling
@@ -493,7 +506,8 @@ def process_video(input_path, output_path):
                         text_color=WHITE,
                         alpha=0.9,
                         padding=10,
-                        rounded=True
+                        rounded=True,
+                        font_style='duplex'
                     )
                 
                 # Label patient hand with elegant styling
@@ -507,11 +521,12 @@ def process_video(input_path, output_path):
                         (patient_x - 45, patient_y - 40),
                         font_scale=0.7,
                         thickness=2,
-                        bg_color=CYAN,
-                        text_color=NAVY_BLUE,
+                        bg_color=(40, 40, 40),
+                        text_color=CYAN,
                         alpha=0.9,
                         padding=10,
-                        rounded=True
+                        rounded=True,
+                        font_style='duplex'
                     )
             else:
                 # No hands detected
@@ -522,7 +537,8 @@ def process_video(input_path, output_path):
                     font_scale=0.7,
                     thickness=2,
                     bg_color=(0, 0, 50),
-                    text_color=RED
+                    text_color=RED,
+                    font_style='duplex'
                 )
             
             # Add MedSnap branding with elegant styling
@@ -536,7 +552,8 @@ def process_video(input_path, output_path):
                 text_color=CYAN,
                 alpha=0.85,
                 padding=10,
-                rounded=True
+                rounded=True,
+                font_style='duplex'
             )
             
             # Frame counter with subtle styling
@@ -550,7 +567,8 @@ def process_video(input_path, output_path):
                 text_color=WHITE,
                 alpha=0.7,
                 padding=8,
-                rounded=True
+                rounded=True,
+                font_style='duplex'
             )
             
             # Write frame
