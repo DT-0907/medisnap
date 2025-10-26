@@ -30,13 +30,22 @@ mp_drawing_styles = mp.solutions.drawing_styles
 # Constants from PRD FR-32
 DETECTION_CONFIDENCE = 0.7
 TRACKING_CONFIDENCE = 0.7
-MAX_NUM_HANDS = 1  # FR-33: Single-person detection
+MAX_NUM_HANDS = 2  # UPDATED: Detect both nurse and patient hands
 
 # Landmark indices (from SNAPML_INTEGRATION_GUIDE.md)
 WRIST = 0
 THUMB_CMC = 1
+THUMB_TIP = 4
 INDEX_FINGER_TIP = 8
+INDEX_FINGER_DIP = 7
+INDEX_FINGER_PIP = 6
 MIDDLE_FINGER_TIP = 12
+MIDDLE_FINGER_DIP = 11
+MIDDLE_FINGER_PIP = 10
+RING_FINGER_TIP = 16
+RING_FINGER_PIP = 14
+PINKY_TIP = 20
+PINKY_PIP = 18
 INDEX_FINGER_MCP = 5
 MIDDLE_FINGER_MCP = 9
 
@@ -56,6 +65,26 @@ TOO_LIGHT_THRESHOLD = 0.25
 # Pulse point constants (from wristDetection.ts)
 PULSE_POINT_OFFSET = 0.02  # ~2cm in normalized coordinates
 PLACEMENT_TOLERANCE = 0.015  # 1.5cm tolerance
+
+def is_nurse_hand(landmarks):
+    """
+    Detect if a hand is the nurse's hand (index and middle fingers extended)
+    Returns True if index and middle fingers are extended, others are curled
+    """
+    # Check if index finger is extended
+    index_extended = landmarks[INDEX_FINGER_TIP].y < landmarks[INDEX_FINGER_PIP].y
+    
+    # Check if middle finger is extended
+    middle_extended = landmarks[MIDDLE_FINGER_TIP].y < landmarks[MIDDLE_FINGER_PIP].y
+    
+    # Check if ring finger is curled (not extended)
+    ring_curled = landmarks[RING_FINGER_TIP].y > landmarks[RING_FINGER_PIP].y
+    
+    # Check if pinky is curled (not extended)
+    pinky_curled = landmarks[PINKY_TIP].y > landmarks[PINKY_PIP].y
+    
+    # Nurse hand: index and middle extended, ring and pinky curled
+    return index_extended and middle_extended and ring_curled and pinky_curled
 
 def find_radial_pulse_point(landmarks, img_width, img_height):
     """
@@ -255,19 +284,48 @@ def process_video(input_path, output_path):
             
             # Draw visualizations
             if results.multi_hand_landmarks:
+                # Classify hands: nurse (2 fingers extended) vs patient
+                nurse_hand = None
+                patient_hand = None
+                
                 for hand_landmarks in results.multi_hand_landmarks:
-                    # Draw hand skeleton (subtle)
-                    mp_drawing.draw_landmarks(
-                        frame,
-                        hand_landmarks,
-                        mp_hands.HAND_CONNECTIONS,
-                        mp_drawing_styles.get_default_hand_landmarks_style(),
-                        mp_drawing_styles.get_default_hand_connections_style()
-                    )
+                    if is_nurse_hand(hand_landmarks.landmark):
+                        nurse_hand = hand_landmarks
+                    else:
+                        patient_hand = hand_landmarks
+                
+                # If we can't identify nurse hand, use first hand as patient
+                if nurse_hand is None and len(results.multi_hand_landmarks) > 0:
+                    patient_hand = results.multi_hand_landmarks[0]
+                
+                # Draw both hands
+                for hand_landmarks in results.multi_hand_landmarks:
+                    is_nurse = (hand_landmarks == nurse_hand)
                     
-                    # Find radial pulse point
+                    # Draw hand skeleton with different colors
+                    if is_nurse:
+                        # Nurse hand: brighter, more visible
+                        mp_drawing.draw_landmarks(
+                            frame,
+                            hand_landmarks,
+                            mp_hands.HAND_CONNECTIONS,
+                            landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=3),
+                            connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
+                        )
+                    else:
+                        # Patient hand: subtle
+                        mp_drawing.draw_landmarks(
+                            frame,
+                            hand_landmarks,
+                            mp_hands.HAND_CONNECTIONS,
+                            mp_drawing_styles.get_default_hand_landmarks_style(),
+                            mp_drawing_styles.get_default_hand_connections_style()
+                        )
+                
+                # Process patient hand for pulse point
+                if patient_hand:
                     pulse_point = find_radial_pulse_point(
-                        hand_landmarks.landmark, 
+                        patient_hand.landmark, 
                         width, 
                         height
                     )
@@ -301,56 +359,92 @@ def process_video(input_path, output_path):
                             bg_color=(0, 0, 0),
                             text_color=YELLOW
                         )
-                        
-                        # Detect pressure
-                        pressure = detect_pressure(hand_landmarks.landmark)
-                        
-                        # Draw pressure bar (top-right corner)
-                        bar_x = width - 250
-                        bar_y = 30
-                        bar_width = 200
-                        bar_height = 30
-                        
-                        # Background bar
-                        cv2.rectangle(frame, (bar_x, bar_y), 
-                                    (bar_x + bar_width, bar_y + bar_height), 
-                                    (50, 50, 50), -1)
-                        
-                        # Pressure fill
-                        fill_width = int(bar_width * pressure['score'])
-                        cv2.rectangle(frame, (bar_x, bar_y), 
-                                    (bar_x + fill_width, bar_y + bar_height), 
-                                    pressure['color'], -1)
-                        
-                        # Optimal range indicator (vertical lines)
-                        opt_min_x = bar_x + int(bar_width * OPTIMAL_PRESSURE_MIN)
-                        opt_max_x = bar_x + int(bar_width * OPTIMAL_PRESSURE_MAX)
-                        cv2.line(frame, (opt_min_x, bar_y), (opt_min_x, bar_y + bar_height), 
-                               GREEN, 2)
-                        cv2.line(frame, (opt_max_x, bar_y), (opt_max_x, bar_y + bar_height), 
-                               GREEN, 2)
-                        
-                        # Pressure label
-                        draw_text_with_background(
-                            frame,
-                            f"Pressure: {pressure['level']} ({pressure['score']:.2f})",
-                            (bar_x, bar_y - 10),
-                            font_scale=0.6,
-                            thickness=2,
-                            bg_color=(0, 0, 0),
-                            text_color=WHITE
-                        )
-                        
-                        # Feedback message (FR-9)
-                        draw_text_with_background(
-                            frame,
-                            pressure['feedback'],
-                            (bar_x - 150, bar_y + bar_height + 30),
-                            font_scale=0.6,
-                            thickness=2,
-                            bg_color=(0, 0, 0),
-                            text_color=pressure['color']
-                        )
+                
+                # Process nurse hand for pressure tracking
+                if nurse_hand:
+                    # Detect pressure from nurse's hand
+                    pressure = detect_pressure(nurse_hand.landmark)
+                    
+                    # Get nurse hand position (wrist center)
+                    nurse_wrist = nurse_hand.landmark[WRIST]
+                    nurse_x = int(nurse_wrist.x * width)
+                    nurse_y = int(nurse_wrist.y * height)
+                    
+                    # Position pressure bar near nurse's hand
+                    # Offset to the right and slightly up from wrist
+                    bar_offset_x = 100
+                    bar_offset_y = -80
+                    bar_x = max(10, min(width - 220, nurse_x + bar_offset_x))
+                    bar_y = max(30, min(height - 100, nurse_y + bar_offset_y))
+                    bar_width = 200
+                    bar_height = 30
+                    
+                    # Background bar
+                    cv2.rectangle(frame, (bar_x, bar_y), 
+                                (bar_x + bar_width, bar_y + bar_height), 
+                                (50, 50, 50), -1)
+                    
+                    # Pressure fill
+                    fill_width = int(bar_width * pressure['score'])
+                    cv2.rectangle(frame, (bar_x, bar_y), 
+                                (bar_x + fill_width, bar_y + bar_height), 
+                                pressure['color'], -1)
+                    
+                    # Optimal range indicator (vertical lines)
+                    opt_min_x = bar_x + int(bar_width * OPTIMAL_PRESSURE_MIN)
+                    opt_max_x = bar_x + int(bar_width * OPTIMAL_PRESSURE_MAX)
+                    cv2.line(frame, (opt_min_x, bar_y), (opt_min_x, bar_y + bar_height), 
+                           GREEN, 2)
+                    cv2.line(frame, (opt_max_x, bar_y), (opt_max_x, bar_y + bar_height), 
+                           GREEN, 2)
+                    
+                    # Pressure label
+                    draw_text_with_background(
+                        frame,
+                        f"Pressure: {pressure['level']} ({pressure['score']:.2f})",
+                        (bar_x, bar_y - 10),
+                        font_scale=0.6,
+                        thickness=2,
+                        bg_color=(0, 0, 0),
+                        text_color=WHITE
+                    )
+                    
+                    # Feedback message (FR-9) - position below bar
+                    draw_text_with_background(
+                        frame,
+                        pressure['feedback'],
+                        (bar_x - 50, bar_y + bar_height + 30),
+                        font_scale=0.6,
+                        thickness=2,
+                        bg_color=(0, 0, 0),
+                        text_color=pressure['color']
+                    )
+                    
+                    # Label nurse hand
+                    draw_text_with_background(
+                        frame,
+                        "NURSE",
+                        (nurse_x - 30, nurse_y - 30),
+                        font_scale=0.6,
+                        thickness=2,
+                        bg_color=(0, 100, 0),
+                        text_color=(0, 255, 0)
+                    )
+                
+                # Label patient hand
+                if patient_hand and patient_hand != nurse_hand:
+                    patient_wrist = patient_hand.landmark[WRIST]
+                    patient_x = int(patient_wrist.x * width)
+                    patient_y = int(patient_wrist.y * height)
+                    draw_text_with_background(
+                        frame,
+                        "PATIENT",
+                        (patient_x - 40, patient_y - 30),
+                        font_scale=0.6,
+                        thickness=2,
+                        bg_color=(50, 50, 0),
+                        text_color=CYAN
+                    )
             else:
                 # No hands detected
                 draw_text_with_background(
@@ -404,14 +498,15 @@ def main():
     Main entry point
     """
     print("=" * 80)
-    print("MedSnap CV Pipeline - Video Visualization Demo")
+    print("MedSnap CV Pipeline - Multi-Hand Video Visualization Demo")
     print("=" * 80)
     print()
     print("Features demonstrated:")
-    print("  ✓ MediaPipe Hands detection (FR-32)")
-    print("  ✓ Radial pulse point identification (FR-34)")
+    print("  ✓ MULTI-HAND DETECTION: Nurse + Patient hands (FR-32)")
+    print("  ✓ NURSE HAND CLASSIFICATION: 2-finger extended detection")
+    print("  ✓ Radial pulse point on PATIENT'S wrist (FR-34)")
     print("  ✓ Finger placement guidance (FR-7, FR-9)")
-    print("  ✓ Pressure level detection (FR-34)")
+    print("  ✓ DYNAMIC pressure tracking (follows nurse hand) (FR-34)")
     print("  ✓ AR overlay visualization (FR-6)")
     print()
     
@@ -438,11 +533,14 @@ def main():
     print("🎉 Demo complete!")
     print()
     print("The processed video shows:")
-    print("  • Glowing cyan circle on radial pulse point")
+    print("  • MULTI-HAND DETECTION: Nurse hand (green) + Patient hand (white)")
+    print("  • NURSE IDENTIFICATION: Detects 2-finger extended hand position")
+    print("  • Glowing cyan circle on PATIENT'S radial pulse point")
     print("  • Yellow arrow with placement instructions")
+    print("  • DYNAMIC pressure tracker that FOLLOWS the nurse's hand")
     print("  • Real-time pressure detection bar (green = optimal)")
     print("  • Pressure feedback messages (FR-9)")
-    print("  • Hand skeleton overlay from MediaPipe")
+    print("  • Hand skeleton overlays from MediaPipe")
     print()
     print(f"Open the video: {output_video.absolute()}")
     print()
