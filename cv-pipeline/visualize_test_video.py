@@ -370,16 +370,47 @@ def process_video(input_path, output_path):
                 if nurse_hand is None and len(results.multi_hand_landmarks) > 0:
                     patient_hand = results.multi_hand_landmarks[0]
                 
-                # Draw only nurse hand skeleton (not patient)
+                # Draw only nurse hand's two extended fingers (index and middle)
                 if nurse_hand:
-                    # Nurse hand: bright green, highly visible
-                    mp_drawing.draw_landmarks(
-                        frame,
-                        nurse_hand,
-                        mp_hands.HAND_CONNECTIONS,
-                        landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=3),
-                        connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
-                    )
+                    landmarks = nurse_hand.landmark
+                    
+                    # Define finger connections (from wrist/MCP to tip)
+                    index_finger_connections = [
+                        (WRIST, INDEX_FINGER_MCP),
+                        (INDEX_FINGER_MCP, INDEX_FINGER_PIP),
+                        (INDEX_FINGER_PIP, INDEX_FINGER_DIP),
+                        (INDEX_FINGER_DIP, INDEX_FINGER_TIP)
+                    ]
+                    
+                    middle_finger_connections = [
+                        (WRIST, MIDDLE_FINGER_MCP),
+                        (MIDDLE_FINGER_MCP, MIDDLE_FINGER_PIP),
+                        (MIDDLE_FINGER_PIP, MIDDLE_FINGER_DIP),
+                        (MIDDLE_FINGER_DIP, MIDDLE_FINGER_TIP)
+                    ]
+                    
+                    # Draw index and middle finger lines
+                    for connection in index_finger_connections + middle_finger_connections:
+                        start_idx, end_idx = connection
+                        start = landmarks[start_idx]
+                        end = landmarks[end_idx]
+                        
+                        start_point = (int(start.x * width), int(start.y * height))
+                        end_point = (int(end.x * width), int(end.y * height))
+                        
+                        # Draw green line
+                        cv2.line(frame, start_point, end_point, (0, 255, 0), 2)
+                    
+                    # Draw circles at finger joints
+                    finger_landmarks = [
+                        WRIST, INDEX_FINGER_MCP, INDEX_FINGER_PIP, INDEX_FINGER_DIP, INDEX_FINGER_TIP,
+                        MIDDLE_FINGER_MCP, MIDDLE_FINGER_PIP, MIDDLE_FINGER_DIP, MIDDLE_FINGER_TIP
+                    ]
+                    
+                    for idx in finger_landmarks:
+                        landmark = landmarks[idx]
+                        point = (int(landmark.x * width), int(landmark.y * height))
+                        cv2.circle(frame, point, 3, (0, 255, 0), -1)
                 
                 # Process patient hand for pulse point
                 if patient_hand:
@@ -603,8 +634,9 @@ def main():
     print()
     
     # File paths
-    input_video = Path("../CVTestVid.MP4")
-    output_video = Path("../CVTestVid_Processed.mp4")
+    input_video = Path("../CVTestTheo.MP4")
+    output_video = Path("../CVTestTheo_Processed.mp4")
+
     
     if not input_video.exists():
         print(f"❌ Error: Input video not found: {input_video}")
