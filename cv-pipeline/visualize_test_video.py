@@ -410,6 +410,10 @@ def process_video(input_path, output_path):
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
     
+    # Pressure smoothing buffer
+    pressure_history = []
+    pressure_smoothing_window = 10  # Smooth over 10 frames
+    
     # Initialize MediaPipe Hands
     with mp_hands.Hands(
         static_image_mode=False,
@@ -533,10 +537,25 @@ def process_video(input_path, output_path):
                                 else:
                                     instruction_offset_y = 50    # Move down
                         
-                        # Draw arrow pointing to pulse point
+                        # Draw smaller arrow pointing to pulse point with space from circle
                         arrow_start = (pulse_point[0] + instruction_offset_x, pulse_point[1] + instruction_offset_y)
-                        arrow_end = (pulse_point[0] + 25, pulse_point[1] - 25)
-                        draw_arrow(frame, arrow_start, arrow_end, CYAN, thickness=3)
+                        
+                        # Calculate direction vector from arrow start to pulse point
+                        dx = pulse_point[0] - arrow_start[0]
+                        dy = pulse_point[1] - arrow_start[1]
+                        magnitude = math.sqrt(dx*dx + dy*dy)
+                        
+                        # Stop arrow 35px away from pulse point (to leave space for pulsing circle)
+                        if magnitude > 35:
+                            scale = (magnitude - 35) / magnitude
+                            arrow_end = (
+                                int(arrow_start[0] + dx * scale),
+                                int(arrow_start[1] + dy * scale)
+                            )
+                        else:
+                            arrow_end = (pulse_point[0] + 25, pulse_point[1] - 25)
+                        
+                        draw_arrow(frame, arrow_start, arrow_end, CYAN, thickness=2)
                         
                         # Add instruction text with elegant styling (FR-7)
                         label_pos = (arrow_start[0] - 80, arrow_start[1] - 15)
@@ -578,6 +597,33 @@ def process_video(input_path, output_path):
                 if nurse_hand:
                     # Detect pressure from nurse's hand
                     pressure = detect_pressure(nurse_hand.landmark)
+                    
+                    # Smooth pressure for better visualization
+                    pressure_history.append(pressure['score'])
+                    if len(pressure_history) > pressure_smoothing_window:
+                        pressure_history.pop(0)
+                    
+                    # Use moving average for smoother bar movement
+                    smoothed_score = sum(pressure_history) / len(pressure_history)
+                    pressure['score'] = smoothed_score
+                    
+                    # Re-classify pressure level based on smoothed score
+                    if smoothed_score > EXCESSIVE_PRESSURE_THRESHOLD:
+                        pressure['level'] = 'TOO HEAVY'
+                        pressure['feedback'] = "You're pressing too hard. Lighten your touch."
+                        pressure['color'] = RED
+                    elif smoothed_score >= OPTIMAL_PRESSURE_MIN and smoothed_score <= OPTIMAL_PRESSURE_MAX:
+                        pressure['level'] = 'OPTIMAL'
+                        pressure['feedback'] = "Good pressure. Apply gentle, steady pressure."
+                        pressure['color'] = GREEN
+                    elif smoothed_score < TOO_LIGHT_THRESHOLD:
+                        pressure['level'] = 'TOO LIGHT'
+                        pressure['feedback'] = "Apply slightly more pressure."
+                        pressure['color'] = YELLOW
+                    else:
+                        pressure['level'] = 'OPTIMAL'
+                        pressure['feedback'] = "Good pressure."
+                        pressure['color'] = GREEN
                     
                     # Get nurse hand position (wrist center)
                     nurse_wrist = nurse_hand.landmark[WRIST]
@@ -771,8 +817,8 @@ def main():
     print()
     
     # File paths
-    input_video = Path("../CVTestTheo.MP4")
-    output_video = Path("../CVTestTheo_Processed.mp4")
+    input_video = Path("../CVTestJason.MP4")
+    output_video = Path("../CVTestJason_Processed.mp4")
 
     
     if not input_video.exists():
