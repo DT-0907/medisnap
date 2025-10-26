@@ -239,6 +239,85 @@ def draw_arrow(img, start, end, color, thickness=2):
     """
     cv2.arrowedLine(img, start, end, color, thickness, tipLength=0.3)
 
+def check_overlap(box1, box2, margin=20):
+    """
+    Check if two bounding boxes overlap (with margin)
+    box = (x1, y1, x2, y2)
+    """
+    x1_min, y1_min, x1_max, y1_max = box1
+    x2_min, y2_min, x2_max, y2_max = box2
+    
+    # Add margin for safety buffer
+    x1_min -= margin
+    y1_min -= margin
+    x1_max += margin
+    y1_max += margin
+    
+    # Check for overlap
+    return not (x1_max < x2_min or x2_max < x1_min or y1_max < y2_min or y2_max < y1_min)
+
+def get_text_bbox(text, position, font_scale=0.6, thickness=2, padding=8, font_style='duplex'):
+    """
+    Get bounding box for text with background
+    Returns (x1, y1, x2, y2)
+    """
+    font_map = {
+        'simplex': cv2.FONT_HERSHEY_SIMPLEX,
+        'duplex': cv2.FONT_HERSHEY_DUPLEX,
+        'triplex': cv2.FONT_HERSHEY_TRIPLEX,
+        'complex': cv2.FONT_HERSHEY_COMPLEX,
+        'plain': cv2.FONT_HERSHEY_PLAIN
+    }
+    font = font_map.get(font_style, cv2.FONT_HERSHEY_DUPLEX)
+    (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+    
+    x, y = position
+    x1 = x - padding
+    y1 = y - text_height - padding
+    x2 = x + text_width + padding
+    y2 = y + baseline + padding
+    
+    return (x1, y1, x2, y2)
+
+def adjust_position_to_avoid_overlap(position, occupied_boxes, width, height, min_offset=50):
+    """
+    Adjust position to avoid overlapping with occupied boxes
+    Returns adjusted (x, y) position
+    """
+    x, y = position
+    
+    # Try different offsets to find non-overlapping position
+    offsets = [
+        (0, 0),           # Original position
+        (0, -min_offset), # Up
+        (0, min_offset),  # Down
+        (min_offset, 0),  # Right
+        (-min_offset, 0), # Left
+        (min_offset, -min_offset),  # Upper right
+        (-min_offset, -min_offset), # Upper left
+        (min_offset, min_offset),   # Lower right
+        (-min_offset, min_offset),  # Lower left
+    ]
+    
+    for dx, dy in offsets:
+        new_x = max(10, min(width - 200, x + dx))
+        new_y = max(30, min(height - 50, y + dy))
+        
+        # Check if this position overlaps with any occupied box
+        test_box = (new_x - 100, new_y - 50, new_x + 100, new_y + 50)
+        
+        overlaps = False
+        for occupied_box in occupied_boxes:
+            if check_overlap(test_box, occupied_box):
+                overlaps = True
+                break
+        
+        if not overlaps:
+            return (new_x, new_y)
+    
+    # If no non-overlapping position found, return original with offset
+    return (x, y + min_offset * 2)
+
 def draw_text_with_background(img, text, position, font_scale=0.6, thickness=2, 
                                 bg_color=(0, 0, 0), text_color=(255, 255, 255), 
                                 alpha=1.0, padding=8, rounded=False, font_style='duplex'):
@@ -356,6 +435,9 @@ def process_video(input_path, output_path):
             
             # Draw visualizations
             if results.multi_hand_landmarks:
+                # Track occupied boxes to prevent overlap
+                occupied_boxes = []
+                
                 # Classify hands: nurse (2 fingers extended) vs patient
                 nurse_hand = None
                 patient_hand = None
@@ -424,13 +506,47 @@ def process_video(input_path, output_path):
                         # Draw smoothly pulsing circle on pulse point (FR-6)
                         draw_pulsing_circle(frame, pulse_point, 15, CYAN, frame_count, pulse_rate=30)
                         
+                        # Smart positioning for instruction box - adapt based on nurse hand proximity
+                        # Default: upper right of pulse point
+                        instruction_offset_x = 100
+                        instruction_offset_y = -100
+                        
+                        # If nurse hand is close, move instruction box to avoid overlap
+                        if nurse_hand:
+                            nurse_wrist = nurse_hand.landmark[WRIST]
+                            nurse_x = int(nurse_wrist.x * width)
+                            nurse_y = int(nurse_wrist.y * height)
+                            
+                            # Calculate distance between nurse hand and pulse point
+                            distance = math.sqrt((nurse_x - pulse_point[0])**2 + (nurse_y - pulse_point[1])**2)
+                            
+                            # If too close (< 200px), reposition instruction box
+                            if distance < 200:
+                                # Move instruction to opposite side
+                                if nurse_x > pulse_point[0]:
+                                    instruction_offset_x = -250  # Move left
+                                else:
+                                    instruction_offset_x = 100   # Keep right
+                                
+                                if nurse_y > pulse_point[1]:
+                                    instruction_offset_y = -150  # Move up more
+                                else:
+                                    instruction_offset_y = 50    # Move down
+                        
                         # Draw arrow pointing to pulse point
-                        arrow_start = (pulse_point[0] + 100, pulse_point[1] - 100)
+                        arrow_start = (pulse_point[0] + instruction_offset_x, pulse_point[1] + instruction_offset_y)
                         arrow_end = (pulse_point[0] + 25, pulse_point[1] - 25)
                         draw_arrow(frame, arrow_start, arrow_end, CYAN, thickness=3)
                         
                         # Add instruction text with elegant styling (FR-7)
                         label_pos = (arrow_start[0] - 80, arrow_start[1] - 15)
+                        
+                        # Calculate bounding boxes and add to occupied
+                        bbox1 = get_text_bbox("Place index and pointer", label_pos, 0.8, 2, 12, 'duplex')
+                        bbox2 = get_text_bbox("fingertips here", (label_pos[0] + 40, label_pos[1] + 35), 0.8, 2, 12, 'duplex')
+                        occupied_boxes.append(bbox1)
+                        occupied_boxes.append(bbox2)
+                        
                         draw_text_with_background(
                             frame,
                             "Place index and pointer",
@@ -526,11 +642,21 @@ def process_video(input_path, output_path):
                         font_style='duplex'
                     )
                     
-                    # Label nurse hand with elegant styling
+                    # Label nurse hand with smart positioning
+                    nurse_label_pos = adjust_position_to_avoid_overlap(
+                        (nurse_x - 30, nurse_y - 40),
+                        occupied_boxes,
+                        width,
+                        height,
+                        min_offset=40
+                    )
+                    nurse_bbox = get_text_bbox("NURSE", nurse_label_pos, 0.7, 2, 10, 'duplex')
+                    occupied_boxes.append(nurse_bbox)
+                    
                     draw_text_with_background(
                         frame,
                         "NURSE",
-                        (nurse_x - 30, nurse_y - 40),
+                        nurse_label_pos,
                         font_scale=0.7,
                         thickness=2,
                         bg_color=(0, 180, 0),
@@ -541,15 +667,26 @@ def process_video(input_path, output_path):
                         font_style='duplex'
                     )
                 
-                # Label patient hand with elegant styling
+                # Label patient hand with smart positioning
                 if patient_hand and patient_hand != nurse_hand:
                     patient_wrist = patient_hand.landmark[WRIST]
                     patient_x = int(patient_wrist.x * width)
                     patient_y = int(patient_wrist.y * height)
+                    
+                    patient_label_pos = adjust_position_to_avoid_overlap(
+                        (patient_x - 45, patient_y - 40),
+                        occupied_boxes,
+                        width,
+                        height,
+                        min_offset=40
+                    )
+                    patient_bbox = get_text_bbox("PATIENT", patient_label_pos, 0.7, 2, 10, 'duplex')
+                    occupied_boxes.append(patient_bbox)
+                    
                     draw_text_with_background(
                         frame,
                         "PATIENT",
-                        (patient_x - 45, patient_y - 40),
+                        patient_label_pos,
                         font_scale=0.7,
                         thickness=2,
                         bg_color=(40, 40, 40),
