@@ -85,28 +85,55 @@ const TrainingMode = class {
     }
 
     setupOverlays() {
-        // Create pulse point overlay (cyan circle)
+        // Use global AR overlay manager for actual rendering
+        if (global.arOverlayManager) {
+            print('[TrainingMode] Using global AR overlay manager for visual overlays');
+            // The global manager is already initialized in arOverlayManager.js
+            // We'll call its methods directly when needed
+        } else {
+            print('[TrainingMode] Warning: Global AR overlay manager not found - overlays will not render');
+        }
+
+        // Keep local references for backward compatibility
+        // These now delegate to the global manager
         this.pulsePointOverlay = {
             show: (config) => {
-                // FR AR-1: Cyan (#00FFFF) at 50% opacity
-                if (global.scene) {
-                    // Position overlay on radial pulse point
-                    print('[TrainingMode] Showing pulse point at: ' + JSON.stringify(config.position));
+                if (global.arOverlayManager && global.arOverlayManager.showPulsePoint) {
+                    global.arOverlayManager.showPulsePoint(config.position);
+                } else {
+                    print('[TrainingMode] Fallback: Showing pulse point at: ' + JSON.stringify(config.position));
                 }
             },
             hide: () => {
-                print('[TrainingMode] Hiding pulse point overlay');
+                if (global.arOverlayManager && global.arOverlayManager.clearOverlays) {
+                    // Clear the pulse point specifically
+                    if (global.arOverlayManager.pulsePointOverlay) {
+                        global.arOverlayManager.pulsePointOverlay.enabled = false;
+                    }
+                } else {
+                    print('[TrainingMode] Fallback: Hiding pulse point overlay');
+                }
             }
         };
 
-        // Create guidance arrow (yellow)
+        // Create guidance arrow wrapper
         this.guidanceArrow = {
             show: (config) => {
-                // FR AR-1: Yellow (#FFFF00) arrow
-                print('[TrainingMode] Showing guidance arrow');
+                if (global.arOverlayManager && global.arOverlayManager.showCorrectionArrows) {
+                    global.arOverlayManager.showCorrectionArrows(config);
+                } else {
+                    print('[TrainingMode] Fallback: Showing guidance arrow: ' + config.direction);
+                }
             },
             hide: () => {
-                print('[TrainingMode] Hiding guidance arrow');
+                if (global.arOverlayManager && global.arOverlayManager.guidanceArrows) {
+                    // Hide all arrows
+                    global.arOverlayManager.guidanceArrows.forEach(arrow => {
+                        arrow.object.enabled = false;
+                    });
+                } else {
+                    print('[TrainingMode] Fallback: Hiding guidance arrow');
+                }
             }
         };
     }

@@ -45,27 +45,39 @@ global.arOverlayManager = {
 
     /**
      * Create pulse point overlay (cyan circle)
+     * Using Text component with circle character instead of mesh
      */
     createPulsePointOverlay: function() {
         // Create scene object for pulse point
         const scene = global.scene || script.getSceneObject().getParent();
         const pulsePoint = scene.createSceneObject("PulsePointOverlay");
 
-        // Add visual component
-        const visual = pulsePoint.createComponent("Component.MeshVisual");
+        // Add Text component to display a circle
+        const textComponent = pulsePoint.createComponent("Component.Text");
 
-        // Create circular mesh
-        visual.mesh = this.createCircleMesh();
+        if (textComponent) {
+            // Use Unicode circle character
+            textComponent.text = "●";
+            textComponent.size = 60; // Large size for visibility
 
-        // Set material with cyan color
-        if (visual.mainPass) {
-            visual.mainPass.baseColor = this.colors.pulsePoint;
-            visual.mainPass.blendMode = 1; // Additive blending for glow effect
+            // Set cyan color per FR AR-1
+            textComponent.textColor = this.colors.pulsePoint;
+
+            // Center alignment
+            if (typeof HorizontalAlignment !== 'undefined') {
+                textComponent.horizontalAlignment = HorizontalAlignment.Center;
+                textComponent.verticalAlignment = VerticalAlignment.Center;
+            }
+
+            // Use default font
+            if (typeof Font !== 'undefined' && Font.Default) {
+                textComponent.font = Font.Default;
+            }
         }
 
         // Position and scale
         const transform = pulsePoint.getTransform();
-        transform.setLocalScale(new vec3(0.04, 0.04, 0.001)); // 2cm radius as per FR-10
+        transform.setLocalScale(new vec3(1, 1, 1)); // Normal scale for text
 
         // Initially hidden
         pulsePoint.enabled = false;
@@ -75,35 +87,46 @@ global.arOverlayManager = {
 
     /**
      * Create guidance arrows
+     * Using Text components with arrow characters instead of meshes
      */
     createGuidanceArrows: function() {
         const scene = global.scene || script.getSceneObject().getParent();
 
-        // Create 4 directional arrows (up, down, left, right)
+        // Create 4 directional arrows using Unicode arrow characters
         const directions = [
-            { name: "ArrowUp", rotation: 0 },
-            { name: "ArrowDown", rotation: 180 },
-            { name: "ArrowLeft", rotation: -90 },
-            { name: "ArrowRight", rotation: 90 }
+            { name: "ArrowUp", character: "↑", rotation: 0 },
+            { name: "ArrowDown", character: "↓", rotation: 180 },
+            { name: "ArrowLeft", character: "←", rotation: -90 },
+            { name: "ArrowRight", character: "→", rotation: 90 }
         ];
 
         directions.forEach(dir => {
             const arrow = scene.createSceneObject(dir.name);
-            const visual = arrow.createComponent("Component.MeshVisual");
+            const textComponent = arrow.createComponent("Component.Text");
 
-            // Create arrow mesh
-            visual.mesh = this.createArrowMesh();
+            if (textComponent) {
+                // Use arrow character
+                textComponent.text = dir.character;
+                textComponent.size = 48; // Large size for visibility
 
-            // Set yellow color
-            if (visual.mainPass) {
-                visual.mainPass.baseColor = this.colors.arrow;
+                // Set bright yellow color per FR AR-1
+                textComponent.textColor = this.colors.arrow;
+
+                // Center alignment
+                if (typeof HorizontalAlignment !== 'undefined') {
+                    textComponent.horizontalAlignment = HorizontalAlignment.Center;
+                    textComponent.verticalAlignment = VerticalAlignment.Center;
+                }
+
+                // Use default font
+                if (typeof Font !== 'undefined' && Font.Default) {
+                    textComponent.font = Font.Default;
+                }
             }
 
-            // Set rotation
+            // Set position (rotation not needed for text arrows)
             const transform = arrow.getTransform();
-            const rotation = quat.fromEulerAngles(0, 0, dir.rotation * Math.PI / 180);
-            transform.setLocalRotation(rotation);
-            transform.setLocalScale(new vec3(0.05, 0.05, 0.001));
+            transform.setLocalScale(new vec3(1, 1, 1));
 
             // Initially hidden
             arrow.enabled = false;
@@ -111,7 +134,8 @@ global.arOverlayManager = {
             this.guidanceArrows.push({
                 name: dir.name,
                 object: arrow,
-                direction: dir.rotation
+                direction: dir.rotation,
+                character: dir.character
             });
         });
     },
@@ -279,74 +303,152 @@ global.arOverlayManager = {
 
     /**
      * Fade in animation
+     * Works with Text components
      */
     fadeIn: function(object, duration) {
         if (!object) return;
 
+        // Try Text component first
+        const textComponent = object.getComponent("Component.Text");
+        if (textComponent) {
+            // Animate alpha from 0 to 1
+            const startAlpha = 0;
+            const targetAlpha = 1;
+            const startTime = getTime();
+            const baseColor = textComponent.textColor || new vec4(1, 1, 1, 1);
+
+            const updateEvent = script.createEvent("UpdateEvent");
+            updateEvent.bind(function() {
+                const elapsed = getTime() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
+                textComponent.textColor = new vec4(baseColor.r, baseColor.g, baseColor.b, currentAlpha);
+
+                if (progress >= 1) {
+                    script.removeEvent(updateEvent);
+                }
+            });
+            return;
+        }
+
+        // Fallback for MeshVisual if needed
         const visual = object.getComponent("Component.MeshVisual");
-        if (!visual || !visual.mainPass) return;
+        if (visual && visual.mainPass) {
+            const startAlpha = 0;
+            const targetAlpha = visual.mainPass.baseColor.a;
+            const startTime = getTime();
 
-        // Animate alpha from 0 to target
-        const startAlpha = 0;
-        const targetAlpha = visual.mainPass.baseColor.a;
-        const startTime = getTime();
+            const updateEvent = script.createEvent("UpdateEvent");
+            updateEvent.bind(function() {
+                const elapsed = getTime() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
 
-        const updateEvent = script.createEvent("UpdateEvent");
-        updateEvent.bind(function() {
-            const elapsed = getTime() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+                const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
+                const color = visual.mainPass.baseColor;
+                visual.mainPass.baseColor = new vec4(color.r, color.g, color.b, currentAlpha);
 
-            const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
-            const color = visual.mainPass.baseColor;
-            visual.mainPass.baseColor = new vec4(color.r, color.g, color.b, currentAlpha);
-
-            if (progress >= 1) {
-                script.removeEvent(updateEvent);
-            }
-        });
+                if (progress >= 1) {
+                    script.removeEvent(updateEvent);
+                }
+            });
+        }
     },
 
     /**
      * Fade out animation
+     * Works with Text components
      */
     fadeOut: function(object, duration) {
         if (!object) return;
 
+        // Try Text component first
+        const textComponent = object.getComponent("Component.Text");
+        if (textComponent) {
+            // Animate alpha from current to 0
+            const startAlpha = textComponent.textColor ? textComponent.textColor.a : 1;
+            const targetAlpha = 0;
+            const startTime = getTime();
+            const baseColor = textComponent.textColor || new vec4(1, 1, 1, 1);
+
+            const updateEvent = script.createEvent("UpdateEvent");
+            updateEvent.bind(function() {
+                const elapsed = getTime() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
+                textComponent.textColor = new vec4(baseColor.r, baseColor.g, baseColor.b, currentAlpha);
+
+                if (progress >= 1) {
+                    object.enabled = false;
+                    script.removeEvent(updateEvent);
+                }
+            });
+            return;
+        }
+
+        // Fallback for MeshVisual if needed
         const visual = object.getComponent("Component.MeshVisual");
-        if (!visual || !visual.mainPass) return;
+        if (visual && visual.mainPass) {
+            const startAlpha = visual.mainPass.baseColor.a;
+            const targetAlpha = 0;
+            const startTime = getTime();
 
-        // Animate alpha from current to 0
-        const startAlpha = visual.mainPass.baseColor.a;
-        const targetAlpha = 0;
-        const startTime = getTime();
+            const updateEvent = script.createEvent("UpdateEvent");
+            updateEvent.bind(function() {
+                const elapsed = getTime() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
 
-        const updateEvent = script.createEvent("UpdateEvent");
-        updateEvent.bind(function() {
-            const elapsed = getTime() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+                const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
+                const color = visual.mainPass.baseColor;
+                visual.mainPass.baseColor = new vec4(color.r, color.g, color.b, currentAlpha);
 
-            const currentAlpha = startAlpha + (targetAlpha - startAlpha) * progress;
-            const color = visual.mainPass.baseColor;
-            visual.mainPass.baseColor = new vec4(color.r, color.g, color.b, currentAlpha);
-
-            if (progress >= 1) {
-                object.enabled = false;
-                script.removeEvent(updateEvent);
-            }
-        });
+                if (progress >= 1) {
+                    object.enabled = false;
+                    script.removeEvent(updateEvent);
+                }
+            });
+        }
     },
 
     /**
      * Pulse animation for emphasis
+     * Works with both Text and regular transforms
      */
     pulseAnimation: function(object) {
         if (!object) return;
 
+        // For Text components, pulse the size instead of scale
+        const textComponent = object.getComponent("Component.Text");
+        if (textComponent) {
+            const originalSize = textComponent.size || 48;
+            const pulseSize = originalSize * 1.3;
+            const updateEvent = script.createEvent("UpdateEvent");
+            const startTime = getTime();
+
+            updateEvent.bind(function() {
+                const elapsed = getTime() - startTime;
+
+                // Pulse for 2 seconds
+                if (elapsed > 2) {
+                    textComponent.size = originalSize;
+                    script.removeEvent(updateEvent);
+                    return;
+                }
+
+                // Oscillate size
+                const phase = Math.sin(elapsed * Math.PI * 2);
+                const size = originalSize + (pulseSize - originalSize) * ((phase + 1) / 2);
+                textComponent.size = size;
+            });
+            return;
+        }
+
+        // Fallback for regular transforms
         const transform = object.getTransform();
         const originalScale = transform.getLocalScale();
         const pulseScale = originalScale.uniformScale(1.2);
 
-        let growing = true;
         const updateEvent = script.createEvent("UpdateEvent");
         const startTime = getTime();
 
@@ -369,24 +471,20 @@ global.arOverlayManager = {
 
     /**
      * Helper: Create circle mesh
+     * DEPRECATED - Now using Text component with circle character
      */
     createCircleMesh: function() {
-        // In production, load from asset
-        // For now, use a cylinder as approximation
-        return global.scene ?
-            global.scene.createMesh("circle_mesh") :
-            null;
+        // No longer needed - using Text components
+        return null;
     },
 
     /**
      * Helper: Create arrow mesh
+     * DEPRECATED - Now using Text component with arrow characters
      */
     createArrowMesh: function() {
-        // In production, load arrow asset
-        // For now, use simple triangle
-        return global.scene ?
-            global.scene.createMesh("arrow_mesh") :
-            null;
+        // No longer needed - using Text components
+        return null;
     },
 
     /**
