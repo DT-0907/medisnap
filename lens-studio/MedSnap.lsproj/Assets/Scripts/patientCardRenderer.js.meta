@@ -1,0 +1,54 @@
+- !<AssetImportMetadata/19f1fb02-6680-42a6-92e1-b5abe2605f66>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 5ec37049-1358-4603-ad52-818dff80591a
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 5ec37049-1358-4603-ad52-818dff80591a
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 15735193-0913-4b85-88cf-e32374e9e586
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/15735193-0913-4b85-88cf-e32374e9e586>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: f40c23cc-7aa3-42de-b815-fe0d36204e63
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    allergiesText: false
+    cardRootObject: false
+    medicationsText: false
+    patientDetailsText: false
+    patientNameText: false
+    symptomsText: false
+    vitalsText: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - patientNameText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      patientDetailsText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      allergiesText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      medicationsText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      symptomsText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      vitalsText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      cardRootObject: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

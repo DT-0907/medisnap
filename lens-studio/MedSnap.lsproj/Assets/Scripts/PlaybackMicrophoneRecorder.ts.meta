@@ -1,0 +1,44 @@
+- !<AssetImportMetadata/842102dd-99f1-42ad-903f-1e94c2084d1f>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 8e306dae-f8a1-4da2-b59d-3399ac6789f1
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 8e306dae-f8a1-4da2-b59d-3399ac6789f1
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> ef538b82-e5d7-4c01-905a-090ab20e3865
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/ef538b82-e5d7-4c01-905a-090ab20e3865>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: da780842-c391-4247-95d1-116f36f10703
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    microphoneRecorder: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - microphoneRecorder: !<MappingBased.AssignableType> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType microphoneRecorder

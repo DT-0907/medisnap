@@ -1,0 +1,52 @@
+- !<AssetImportMetadata/f0f2fffd-1864-420d-a455-71e945566996>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 8dd3a86b-a680-4585-b034-a995ea05ab88
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 8dd3a86b-a680-4585-b034-a995ea05ab88
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 92080072-ff44-4ffc-a842-7d5b4fce40fb
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/92080072-ff44-4ffc-a842-7d5b4fce40fb>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 78b3fa06-dbc9-4837-8015-3fa3d9741e3c
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    audioComponent: false
+    medicationListText: false
+    prescriptionCard: false
+    prescriptionText: false
+    screenTransform: false
+    warningText: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - prescriptionCard: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      prescriptionText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      warningText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      medicationListText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      audioComponent: !<reference.AudioComponent> 00000000-0000-0000-0000-000000000000
+      screenTransform: !<reference.ScreenTransform> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

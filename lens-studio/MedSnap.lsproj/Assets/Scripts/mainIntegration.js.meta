@@ -1,0 +1,48 @@
+- !<AssetImportMetadata/58f7958e-9b52-4c00-a1b2-15bb91e006cc>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 6faa4e05-f88a-49d1-bb05-8f5cb50d6faf
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 6faa4e05-f88a-49d1-bb05-8f5cb50d6faf
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 67d2920f-9a74-4e0c-84b6-a6bf79a5ac1e
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/67d2920f-9a74-4e0c-84b6-a6bf79a5ac1e>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: da980e9e-8d32-482d-9484-f04556865cdd
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    audioComponent: false
+    handTrackerObject: false
+    remoteServiceModule: false
+    statusText: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - handTrackerObject: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      audioComponent: !<reference.AudioComponent> 00000000-0000-0000-0000-000000000000
+      statusText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      remoteServiceModule: !<reference.RemoteServiceModule> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
