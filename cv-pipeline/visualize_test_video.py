@@ -55,6 +55,8 @@ YELLOW = (0, 255, 255)    # Yellow for arrows/corrections
 GREEN = (0, 255, 0)       # Green for success
 RED = (0, 0, 255)         # Red for warnings
 WHITE = (255, 255, 255)
+NAVY_BLUE = (128, 0, 0)   # Navy blue (BGR format)
+OFF_WHITE = (245, 245, 250) # Off-white (BGR format)
 
 # Pressure thresholds (from pressureDetection.ts)
 OPTIMAL_PRESSURE_MIN = 0.30
@@ -195,19 +197,39 @@ def detect_pressure(landmarks):
         'color': color
     }
 
-def draw_glowing_circle(img, center, radius, color, glow_intensity=3):
+def draw_pulsing_circle(img, center, radius, color, frame_count, pulse_rate=30):
     """
-    Draw a glowing circle effect (AR overlay simulation)
+    Draw a smoothly pulsing circle effect (1 pulse per second at 30fps)
+    
+    Args:
+        img: Image to draw on
+        center: (x, y) center position
+        radius: Base radius
+        color: Circle color
+        frame_count: Current frame number
+        pulse_rate: Frames per pulse cycle (30 = 1 second at 30fps)
     """
-    # Draw multiple circles with decreasing intensity for glow effect
+    # Calculate pulse phase (0 to 1)
+    pulse_phase = (frame_count % pulse_rate) / pulse_rate
+    
+    # Smooth sine wave for pulsing (0.7 to 1.3 scale)
+    scale = 0.85 + 0.3 * math.sin(pulse_phase * 2 * math.pi)
+    
+    # Varying alpha for glow intensity
+    alpha_multiplier = 0.7 + 0.3 * math.sin(pulse_phase * 2 * math.pi)
+    
+    # Draw glow layers
+    glow_intensity = 4
     for i in range(glow_intensity, 0, -1):
-        alpha = 0.3 / i
+        alpha = (0.3 / i) * alpha_multiplier
         overlay = img.copy()
-        cv2.circle(overlay, center, radius + i*3, color, thickness=-1)
+        glow_radius = int((radius + i*4) * scale)
+        cv2.circle(overlay, center, glow_radius, color, thickness=-1)
         cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
     
-    # Draw main circle
-    cv2.circle(img, center, radius, color, thickness=3)
+    # Draw main circle with pulsing
+    main_radius = int(radius * scale)
+    cv2.circle(img, center, main_radius, color, thickness=3)
     
     return img
 
@@ -218,23 +240,64 @@ def draw_arrow(img, start, end, color, thickness=2):
     cv2.arrowedLine(img, start, end, color, thickness, tipLength=0.3)
 
 def draw_text_with_background(img, text, position, font_scale=0.6, thickness=2, 
-                                bg_color=(0, 0, 0), text_color=(255, 255, 255)):
+                                bg_color=(0, 0, 0), text_color=(255, 255, 255), 
+                                alpha=1.0, padding=8, rounded=False):
     """
     Draw text with a background rectangle for better visibility
+    
+    Args:
+        img: Image to draw on
+        text: Text to display
+        position: (x, y) position
+        font_scale: Font size scale
+        thickness: Font thickness
+        bg_color: Background color (BGR)
+        text_color: Text color (BGR)
+        alpha: Background transparency (0.0-1.0, where 1.0 is opaque)
+        padding: Padding around text
+        rounded: Whether to use rounded corners
     """
     font = cv2.FONT_HERSHEY_SIMPLEX
     (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
     
     x, y = position
-    # Draw background rectangle
-    padding = 5
-    cv2.rectangle(img, 
-                  (x - padding, y - text_height - padding),
-                  (x + text_width + padding, y + baseline + padding),
-                  bg_color, -1)
+    
+    # Calculate rectangle coordinates
+    x1 = x - padding
+    y1 = y - text_height - padding
+    x2 = x + text_width + padding
+    y2 = y + baseline + padding
+    
+    # Draw background with transparency
+    if alpha < 1.0:
+        overlay = img.copy()
+        if rounded:
+            # Draw rounded rectangle (approximate with multiple shapes)
+            radius = min(10, padding)
+            cv2.rectangle(overlay, (x1 + radius, y1), (x2 - radius, y2), bg_color, -1)
+            cv2.rectangle(overlay, (x1, y1 + radius), (x2, y2 - radius), bg_color, -1)
+            cv2.circle(overlay, (x1 + radius, y1 + radius), radius, bg_color, -1)
+            cv2.circle(overlay, (x2 - radius, y1 + radius), radius, bg_color, -1)
+            cv2.circle(overlay, (x1 + radius, y2 - radius), radius, bg_color, -1)
+            cv2.circle(overlay, (x2 - radius, y2 - radius), radius, bg_color, -1)
+        else:
+            cv2.rectangle(overlay, (x1, y1), (x2, y2), bg_color, -1)
+        
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
+    else:
+        if rounded:
+            radius = min(10, padding)
+            cv2.rectangle(img, (x1 + radius, y1), (x2 - radius, y2), bg_color, -1)
+            cv2.rectangle(img, (x1, y1 + radius), (x2, y2 - radius), bg_color, -1)
+            cv2.circle(img, (x1 + radius, y1 + radius), radius, bg_color, -1)
+            cv2.circle(img, (x2 - radius, y1 + radius), radius, bg_color, -1)
+            cv2.circle(img, (x1 + radius, y2 - radius), radius, bg_color, -1)
+            cv2.circle(img, (x2 - radius, y2 - radius), radius, bg_color, -1)
+        else:
+            cv2.rectangle(img, (x1, y1), (x2, y2), bg_color, -1)
     
     # Draw text
-    cv2.putText(img, text, (x, y), font, font_scale, text_color, thickness)
+    cv2.putText(img, text, (x, y), font, font_scale, text_color, thickness, cv2.LINE_AA)
 
 def process_video(input_path, output_path):
     """
@@ -298,29 +361,16 @@ def process_video(input_path, output_path):
                 if nurse_hand is None and len(results.multi_hand_landmarks) > 0:
                     patient_hand = results.multi_hand_landmarks[0]
                 
-                # Draw both hands
-                for hand_landmarks in results.multi_hand_landmarks:
-                    is_nurse = (hand_landmarks == nurse_hand)
-                    
-                    # Draw hand skeleton with different colors
-                    if is_nurse:
-                        # Nurse hand: brighter, more visible
-                        mp_drawing.draw_landmarks(
-                            frame,
-                            hand_landmarks,
-                            mp_hands.HAND_CONNECTIONS,
-                            landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=3),
-                            connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
-                        )
-                    else:
-                        # Patient hand: subtle
-                        mp_drawing.draw_landmarks(
-                            frame,
-                            hand_landmarks,
-                            mp_hands.HAND_CONNECTIONS,
-                            mp_drawing_styles.get_default_hand_landmarks_style(),
-                            mp_drawing_styles.get_default_hand_connections_style()
-                        )
+                # Draw only nurse hand skeleton (not patient)
+                if nurse_hand:
+                    # Nurse hand: bright green, highly visible
+                    mp_drawing.draw_landmarks(
+                        frame,
+                        nurse_hand,
+                        mp_hands.HAND_CONNECTIONS,
+                        landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=3),
+                        connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
+                    )
                 
                 # Process patient hand for pulse point
                 if patient_hand:
@@ -331,33 +381,39 @@ def process_video(input_path, output_path):
                     )
                     
                     if pulse_point:
-                        # Draw glowing circle on pulse point (FR-6)
-                        draw_glowing_circle(frame, pulse_point, 15, CYAN, glow_intensity=4)
+                        # Draw smoothly pulsing circle on pulse point (FR-6)
+                        draw_pulsing_circle(frame, pulse_point, 15, CYAN, frame_count, pulse_rate=30)
                         
-                        # Draw arrow and label
-                        arrow_start = (pulse_point[0] + 80, pulse_point[1] - 80)
-                        arrow_end = (pulse_point[0] + 20, pulse_point[1] - 20)
-                        draw_arrow(frame, arrow_start, arrow_end, YELLOW, thickness=3)
+                        # Draw arrow pointing to pulse point
+                        arrow_start = (pulse_point[0] + 100, pulse_point[1] - 100)
+                        arrow_end = (pulse_point[0] + 25, pulse_point[1] - 25)
+                        draw_arrow(frame, arrow_start, arrow_end, NAVY_BLUE, thickness=3)
                         
-                        # Add instruction text (FR-7)
-                        label_pos = (arrow_start[0] - 50, arrow_start[1] - 10)
+                        # Add instruction text with elegant styling (FR-7)
+                        label_pos = (arrow_start[0] - 80, arrow_start[1] - 15)
                         draw_text_with_background(
                             frame,
-                            "Place index and",
+                            "Place index and pointer",
                             label_pos,
-                            font_scale=0.7,
+                            font_scale=0.8,
                             thickness=2,
-                            bg_color=(0, 0, 0),
-                            text_color=YELLOW
+                            bg_color=OFF_WHITE,
+                            text_color=NAVY_BLUE,
+                            alpha=0.85,
+                            padding=12,
+                            rounded=True
                         )
                         draw_text_with_background(
                             frame,
-                            "pointer fingertips here",
-                            (label_pos[0], label_pos[1] + 30),
-                            font_scale=0.7,
+                            "fingertips here",
+                            (label_pos[0] + 40, label_pos[1] + 35),
+                            font_scale=0.8,
                             thickness=2,
-                            bg_color=(0, 0, 0),
-                            text_color=YELLOW
+                            bg_color=OFF_WHITE,
+                            text_color=NAVY_BLUE,
+                            alpha=0.85,
+                            padding=12,
+                            rounded=True
                         )
                 
                 # Process nurse hand for pressure tracking
@@ -398,40 +454,49 @@ def process_video(input_path, output_path):
                     cv2.line(frame, (opt_max_x, bar_y), (opt_max_x, bar_y + bar_height), 
                            GREEN, 2)
                     
-                    # Pressure label
+                    # Pressure label with elegant styling
                     draw_text_with_background(
                         frame,
-                        f"Pressure: {pressure['level']} ({pressure['score']:.2f})",
-                        (bar_x, bar_y - 10),
-                        font_scale=0.6,
+                        f"Pressure: {pressure['level']}",
+                        (bar_x, bar_y - 15),
+                        font_scale=0.65,
                         thickness=2,
-                        bg_color=(0, 0, 0),
-                        text_color=WHITE
+                        bg_color=(40, 40, 40),
+                        text_color=WHITE,
+                        alpha=0.85,
+                        padding=8,
+                        rounded=True
                     )
                     
-                    # Feedback message (FR-9) - position below bar
+                    # Feedback message (FR-9) with elegant styling
                     draw_text_with_background(
                         frame,
                         pressure['feedback'],
-                        (bar_x - 50, bar_y + bar_height + 30),
-                        font_scale=0.6,
+                        (bar_x - 30, bar_y + bar_height + 35),
+                        font_scale=0.65,
                         thickness=2,
-                        bg_color=(0, 0, 0),
-                        text_color=pressure['color']
+                        bg_color=OFF_WHITE,
+                        text_color=pressure['color'],
+                        alpha=0.88,
+                        padding=10,
+                        rounded=True
                     )
                     
-                    # Label nurse hand
+                    # Label nurse hand with elegant styling
                     draw_text_with_background(
                         frame,
                         "NURSE",
-                        (nurse_x - 30, nurse_y - 30),
-                        font_scale=0.6,
+                        (nurse_x - 30, nurse_y - 40),
+                        font_scale=0.7,
                         thickness=2,
-                        bg_color=(0, 100, 0),
-                        text_color=(0, 255, 0)
+                        bg_color=(0, 180, 0),
+                        text_color=WHITE,
+                        alpha=0.9,
+                        padding=10,
+                        rounded=True
                     )
                 
-                # Label patient hand
+                # Label patient hand with elegant styling
                 if patient_hand and patient_hand != nurse_hand:
                     patient_wrist = patient_hand.landmark[WRIST]
                     patient_x = int(patient_wrist.x * width)
@@ -439,11 +504,14 @@ def process_video(input_path, output_path):
                     draw_text_with_background(
                         frame,
                         "PATIENT",
-                        (patient_x - 40, patient_y - 30),
-                        font_scale=0.6,
+                        (patient_x - 45, patient_y - 40),
+                        font_scale=0.7,
                         thickness=2,
-                        bg_color=(50, 50, 0),
-                        text_color=CYAN
+                        bg_color=CYAN,
+                        text_color=NAVY_BLUE,
+                        alpha=0.9,
+                        padding=10,
+                        rounded=True
                     )
             else:
                 # No hands detected
@@ -457,26 +525,32 @@ def process_video(input_path, output_path):
                     text_color=RED
                 )
             
-            # Add MedSnap branding and info
+            # Add MedSnap branding with elegant styling
             draw_text_with_background(
                 frame,
                 "MedSnap CV Pipeline - MediaPipe Hands v0.9+",
-                (10, 30),
-                font_scale=0.6,
+                (15, 35),
+                font_scale=0.65,
                 thickness=2,
-                bg_color=(20, 20, 20),
-                text_color=CYAN
+                bg_color=(30, 30, 30),
+                text_color=CYAN,
+                alpha=0.85,
+                padding=10,
+                rounded=True
             )
             
-            # Frame counter
+            # Frame counter with subtle styling
             draw_text_with_background(
                 frame,
                 f"Frame: {frame_count}/{total_frames}",
-                (10, height - 20),
+                (15, height - 25),
                 font_scale=0.5,
                 thickness=1,
-                bg_color=(20, 20, 20),
-                text_color=WHITE
+                bg_color=(30, 30, 30),
+                text_color=WHITE,
+                alpha=0.7,
+                padding=8,
+                rounded=True
             )
             
             # Write frame
