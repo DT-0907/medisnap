@@ -1,0 +1,548 @@
+# MedSnap - AR Medical Assistant for Snap Spectacles
+# Cursor AI Development Rules
+
+## Project Context
+- **Project**: MedSnap - Hands-free AR medical assistant
+- **Timeline**: 48-hour hackathon
+- **Team**: 4 developers (Dev 1: Training/AR, Dev 2: Clinical/Voice UX, Dev 3: Backend/AI, Dev 4: Data/CV/Integration)
+- **Current Role**: Dev 4 - Data, Computer Vision & Integration Owner
+- **Branch**: CV (all commits go to CV branch)
+
+## Core Principles
+
+### 1. Test-Driven Development (TDD) - MANDATORY
+**ALWAYS follow this workflow:**
+1. Write tests FIRST - define expected behavior before implementation
+2. Run tests - confirm they FAIL (proves tests are valid)
+3. Commit tests - `git commit -m "Add [component] tests"`
+4. Implement code - write minimum code to pass tests
+5. Run tests - iterate until all tests PASS
+6. Verify - ensure implementation doesn't overfit to tests
+7. Commit code - `git commit -m "Implement [component]"`
+
+**Never skip test-first approach. Never commit untested code.**
+
+### 2. Performance Requirements
+All implementations must meet these targets:
+- AR rendering: ≥30 FPS (FR-41)
+- CV detection latency: <500ms (FR-43)
+- API response time: <3 seconds (target: 2s) (FR-42)
+- TTS generation: <1.5 seconds (target: <500ms) (FR-44)
+- Cache hit rate: >50% (FR-44a)
+
+### 3. PRD Compliance
+- **Always reference PRD sections** when implementing features
+- **Use exact voice prompts** from FR-8 (training) and FR-15 (clinical)
+- **Follow exact API response structure** from Appendix B
+- **All Functional Requirements (FR-XX) are mandatory** unless marked as MAY
+
+## Technology Stack
+
+### Backend
+- **Language**: TypeScript (strict mode)
+- **Framework**: Node.js v18+ with Express.js
+- **Database**: Supabase (PostgreSQL)
+- **Hosting**: Railway (auto-deploy from main branch)
+
+### Computer Vision
+- **Primary**: MediaPipe Hands v0.9+ (via HuggingFace)
+- **OCR**: Tesseract.js or similar for vital sign reading
+- **Configuration**: 640x480 RGB, 15 FPS, confidence threshold ≥0.7
+
+### External APIs
+- Gemini API (wrapped with Letta for context management)
+- Fish Audio API (TTS)
+- Snap AR Speech-to-Text (client-side)
+
+### Testing
+- **Framework**: Jest with ts-jest
+- **Coverage Target**: 80%+ for services/controllers, 100% for critical paths
+- **Test Types**: Unit, Integration, E2E, Performance
+
+## File Structure & Naming
+
+### Directory Organization
+```
+medisnap/
+├── backend/
+│   ├── src/
+│   │   ├── routes/         # API endpoint definitions
+│   │   ├── controllers/    # Business logic
+│   │   ├── services/       # External API integrations
+│   │   ├── models/         # Data models & DB queries
+│   │   ├── db/             # Supabase client & schema
+│   │   └── utils/          # Helper functions (caching, etc)
+│   ├── tests/
+│   │   ├── unit/           # Unit tests (mirror src/ structure)
+│   │   └── integration/    # E2E flow tests
+│   ├── data/
+│   │   └── patients.json   # Mock patient seed data
+│   └── db/
+│       ├── schema.sql      # Database schema
+│       └── seed.sql        # Seed script
+├── cv-pipeline/
+│   ├── src/
+│   │   ├── mediapipeHands.ts    # MediaPipe integration
+│   │   ├── wristDetection.ts    # Wrist landmark logic
+│   │   └── vitalSignOCR.ts      # OCR for monitors
+│   └── tests/                   # CV unit tests
+└── lens-studio/            # (Dev 1 & 2 - not our focus)
+```
+
+### Naming Conventions
+- **Files**: camelCase for TypeScript files (e.g., `drugInteractionService.ts`)
+- **Tests**: Match source file with `.test.ts` suffix (e.g., `drugInteractionService.test.ts`)
+- **Classes**: PascalCase (e.g., `PatientModel`)
+- **Functions**: camelCase (e.g., `checkDrugInteraction()`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_ATTEMPTS`)
+- **Interfaces**: PascalCase with 'I' prefix optional (e.g., `Patient` or `IPatient`)
+
+## Code Style
+
+### TypeScript Standards
+```typescript
+// Use strict types - no 'any'
+function processPatient(patient: Patient): PatientResult {
+  // Early returns for validation
+  if (!patient.id) {
+    throw new Error('Patient ID required');
+  }
+  
+  // Explicit return types
+  return {
+    success: true,
+    data: patient
+  };
+}
+
+// Use async/await, not .then()
+async function loadPatient(name: string): Promise<Patient> {
+  const result = await supabase
+    .from('patients')
+    .select('*')
+    .ilike('name', name)
+    .single();
+  
+  if (result.error) {
+    throw new Error(`Patient not found: ${name}`);
+  }
+  
+  return result.data;
+}
+
+// Proper error handling
+try {
+  const patient = await loadPatient('Sarah Chen');
+} catch (error) {
+  logger.error('Patient load failed', { error, name });
+  return { success: false, error: error.message };
+}
+```
+
+### Testing Patterns
+```typescript
+describe('DrugInteractionService', () => {
+  describe('checkInteraction', () => {
+    it('should detect HIGH severity interaction between Warfarin and Ibuprofen', () => {
+      // Arrange
+      const medications = ['Warfarin'];
+      const newMedication = 'Ibuprofen';
+      
+      // Act
+      const result = checkInteraction(medications, newMedication);
+      
+      // Assert
+      expect(result.blocked).toBe(true);
+      expect(result.severity).toBe('HIGH');
+      expect(result.warnings).toContainEqual(
+        expect.objectContaining({
+          type: 'drug_interaction',
+          message: expect.stringContaining('bleeding risk')
+        })
+      );
+    });
+  });
+});
+```
+
+## Database Schema Rules
+
+### Schema from PRD FR-37
+```sql
+-- patients table with JSONB for complex data
+CREATE TABLE patients (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  age INTEGER NOT NULL,
+  sex TEXT NOT NULL,
+  chief_complaint TEXT,
+  current_symptoms TEXT[],
+  vital_signs JSONB, -- {bp, hr, o2, temp}
+  allergies TEXT[] NOT NULL DEFAULT '{}',
+  medications JSONB NOT NULL DEFAULT '[]', -- Array of {name, dosage, started}
+  diagnosis_history JSONB NOT NULL DEFAULT '[]', -- Array of {date, diagnosis, provider}
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**CRITICAL**: Sarah Chen MUST have Warfarin in medications array for drug interaction demo.
+
+### Data Integrity Rules
+1. All seed data must match PRD Appendix examples exactly
+2. Sarah Chen is the primary demo patient - her data is sacred
+3. Use JSONB for nested arrays (medications, diagnosis_history)
+4. Use TEXT[] for simple arrays (allergies, symptoms)
+5. All UUIDs use uuid_generate_v4()
+
+## Computer Vision Implementation
+
+### MediaPipe Hands Requirements (FR-32)
+```typescript
+// Configuration
+const config = {
+  model: 'MediaPipe Hands v0.9+',
+  input: {
+    width: 640,
+    height: 480,
+    fps: 15,
+    format: 'RGB'
+  },
+  confidence: 0.7, // minimum threshold
+  maxHands: 1 // single person detection (FR-33)
+};
+
+// Retry logic (FR-10a)
+const CV_RETRY_TIMEOUT = 10000; // 10 seconds
+const CV_RETRY_INTERVAL = 500; // check every 500ms
+
+// Graceful degradation (FR-36)
+if (cvDetectionFailed) {
+  skipCVAndContinueWorkflow();
+}
+```
+
+### Vital Sign OCR Requirements (FR-16, FR-17, FR-17a)
+```typescript
+// Retry logic - 2 attempts with 2-second delay
+const OCR_RETRY_COUNT = 2;
+const OCR_RETRY_DELAY = 2000;
+
+// Expected data structure
+interface VitalSigns {
+  bp: string;        // "118/76"
+  hr: number;        // 88
+  o2: number;        // 97
+  temp: number;      // 101.5
+}
+
+// Graceful failure after retries
+if (ocrFailedAfterRetries) {
+  allowManualVitalEntry();
+}
+```
+
+## API Endpoint Standards
+
+### All Endpoints (10 total)
+1. `POST /api/training/start` - Initialize training session
+2. `POST /api/training/feedback` - Process training feedback
+3. `POST /api/clinical/patient/load` - Load patient record
+4. `POST /api/clinical/symptom/record` - Record symptom
+5. `POST /api/clinical/decision-support` - Get AI recommendations
+6. `POST /api/clinical/prescription/create` - Create prescription
+7. `POST /api/voice/command` - Extract intent from transcription
+8. `POST /api/tts/generate` - Generate TTS audio
+
+### Response Structure (from PRD Appendix B)
+```typescript
+// Always include these fields
+interface APIResponse {
+  success: boolean;
+  // ... specific data fields ...
+  tts_url?: string; // Fish Audio TTS URL (most endpoints)
+  ar_config?: {     // For AR display endpoints
+    display_duration: number;
+    card_position: string;
+    priority_fields: string[];
+  };
+}
+
+// Prescription response must match PRD exactly
+interface PrescriptionResponse {
+  success: boolean;
+  blocked: boolean;
+  warnings?: Array<{
+    type: string;
+    severity: string;
+    message: string;
+    explanation: string;
+  }>;
+  alternatives?: Array<{
+    medication: string;
+    dosage: string;
+    rationale: string;
+  }>;
+  prescription?: {
+    id: string;
+    medication: string;
+    dosage: string;
+    status: 'pending_physician_approval';
+    created_at: string;
+  };
+  ar_display?: {
+    icon: string;
+    message: string;
+    badge: string;
+  };
+  tts_url: string;
+}
+```
+
+## Integration Testing Requirements
+
+### Three Critical Test Suites (TDD)
+
+#### 1. Training Flow (tests/integration/training-flow.test.ts)
+```typescript
+describe('Training Flow Integration', () => {
+  it('should complete full pulse-taking training flow', async () => {
+    // 1. Start training
+    const startRes = await request(app)
+      .post('/api/training/start')
+      .send({ procedure: 'pulse_taking', user_id: 'test-user' });
+    
+    expect(startRes.body.session_id).toBeDefined();
+    expect(startRes.body.initial_instructions).toContain('Starting pulse taking training');
+    
+    // 2. Submit feedback with BPM
+    const feedbackRes = await request(app)
+      .post('/api/training/feedback')
+      .send({ session_id: startRes.body.session_id, bpm: 72 });
+    
+    expect(feedbackRes.body.feedback_text).toContain('Normal range');
+    expect(feedbackRes.body.audio_url).toBeDefined();
+  });
+  
+  it('should retry CV detection for 10 seconds before offering skip', async () => {
+    // Test FR-10a retry logic
+  });
+});
+```
+
+#### 2. Clinical Flow (tests/integration/clinical-flow.test.ts)
+```typescript
+it('should load Sarah Chen with Warfarin medication', async () => {
+  const res = await request(app)
+    .post('/api/clinical/patient/load')
+    .send({ patient_name: 'Sarah Chen' });
+  
+  expect(res.body.patient.name).toBe('Sarah Chen');
+  expect(res.body.patient.medications).toContainEqual(
+    expect.objectContaining({ name: 'Warfarin' })
+  );
+});
+```
+
+#### 3. Prescription Flow (tests/integration/prescription-flow.test.ts)
+```typescript
+it('should block Ibuprofen prescription for Warfarin patient', async () => {
+  const res = await request(app)
+    .post('/api/clinical/prescription/create')
+    .send({ 
+      patient_id: sarahChenId, 
+      medication: 'Ibuprofen',
+      dosage: '400mg'
+    });
+  
+  expect(res.body.blocked).toBe(true);
+  expect(res.body.warnings[0].severity).toBe('HIGH');
+  expect(res.body.alternatives).toContainEqual(
+    expect.objectContaining({ medication: 'Acetaminophen' })
+  );
+});
+```
+
+## Performance Testing
+
+### Automated Performance Checks
+```typescript
+describe('Performance Requirements', () => {
+  it('should respond to API calls in <3 seconds', async () => {
+    const start = Date.now();
+    await request(app).post('/api/clinical/patient/load').send({ patient_name: 'Sarah Chen' });
+    const duration = Date.now() - start;
+    expect(duration).toBeLessThan(3000);
+  });
+  
+  it('should complete CV detection in <500ms', async () => {
+    const start = Date.now();
+    const result = await detectHands(testFrame);
+    const duration = Date.now() - start;
+    expect(duration).toBeLessThan(500);
+  });
+});
+```
+
+## Git Workflow
+
+### Branch Strategy
+- **Current branch**: `CV` (all Dev 4 work)
+- **Never push to main** directly
+- **Commit after each TDD cycle**: tests first, then implementation
+
+### Commit Message Format
+```
+[TDD] Add [component] tests
+[TDD] Implement [component]
+[Integration] Connect [system A] with [system B]
+[Fix] [brief description]
+[Perf] Optimize [component] for [metric]
+[Docs] Update [documentation]
+```
+
+### Critical Handoff Points
+- **Hour 6**: Database schema + Supabase credentials → Dev 3
+- **Hour 24**: CV pipeline integration → Dev 1
+- **Hour 36**: Integration test signoff → All devs
+
+## Demo Mode Configuration
+
+### Environment Variables
+```bash
+# .env
+DEMO_MODE=false  # Set to true for mock API responses
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+GEMINI_API_KEY=your_gemini_key
+FISH_AUDIO_API_KEY=your_fish_audio_key
+LETTA_API_KEY=your_letta_key
+PORT=3000
+```
+
+### Demo Mode Behavior
+```typescript
+if (process.env.DEMO_MODE === 'true') {
+  // Return mock responses for all external APIs
+  return mockPatientData;
+}
+```
+
+## Error Handling Standards
+
+### Graceful Degradation (FR-36)
+```typescript
+// CV failures should not block workflow
+async function detectWristWithFallback() {
+  try {
+    return await detectWrist(frame);
+  } catch (error) {
+    logger.warn('CV detection failed, continuing workflow', { error });
+    return null; // Continue without CV data
+  }
+}
+
+// Retry logic with timeout
+async function detectWithRetry(maxRetries = 3, timeout = 10000) {
+  const startTime = Date.now();
+  let attempts = 0;
+  
+  while (attempts < maxRetries && Date.now() - startTime < timeout) {
+    try {
+      return await detect();
+    } catch (error) {
+      attempts++;
+      await sleep(2000);
+    }
+  }
+  
+  return null; // Graceful failure
+}
+```
+
+## Medication Database (FR-22)
+
+### Required Medications (8 baseline, allow 7-10)
+```typescript
+const MEDICATIONS = [
+  { name: 'Amoxicillin', class: 'antibiotic', common_dosage: '500mg TID' },
+  { name: 'Azithromycin', class: 'antibiotic', common_dosage: '250mg QD' },
+  { name: 'Acetaminophen', class: 'pain_reliever', common_dosage: '500mg Q6H' },
+  { name: 'Ibuprofen', class: 'NSAID', common_dosage: '400mg Q6H' },
+  { name: 'Lisinopril', class: 'ACE_inhibitor', common_dosage: '10mg QD' },
+  { name: 'Metformin', class: 'antidiabetic', common_dosage: '500mg BID' },
+  { name: 'Omeprazole', class: 'PPI', common_dosage: '20mg QD' },
+  { name: 'Warfarin', class: 'anticoagulant', common_dosage: '5mg QD' }
+];
+
+// Drug interactions
+const INTERACTIONS = {
+  'Warfarin + Ibuprofen': { severity: 'HIGH', message: 'Increased bleeding risk' },
+  'Warfarin + NSAID': { severity: 'HIGH', message: 'Increased bleeding risk' }
+};
+```
+
+## Acceptance Criteria Tracking
+
+### Must Pass Before Demo
+- AC-T1 to AC-T6: Training mode acceptance (6 criteria)
+- AC-C1 to AC-C6: Clinical mode acceptance (6 criteria)
+- AC-P1 to AC-P5: Prescription system acceptance (5 criteria)
+- AC-V1 to AC-V5: Voice interaction acceptance (5 criteria)
+- AC-CV1 to AC-CV3: Computer vision acceptance (3 criteria)
+- AC-P1 to AC-P4: Performance acceptance (4 criteria)
+
+### Integration Acceptance
+- AC-I1 to AC-I4: Integration acceptance (4 criteria)
+
+**Total: 33 acceptance criteria - ALL must pass**
+
+## Common Pitfalls to Avoid
+
+1. ❌ Don't skip TDD - write tests first, always
+2. ❌ Don't use 'any' types - strict TypeScript only
+3. ❌ Don't modify Sarah Chen's Warfarin medication - it's demo-critical
+4. ❌ Don't block workflow on CV failures - graceful degradation
+5. ❌ Don't forget retry logic (CV: 10s, OCR: 2x with 2s delay)
+6. ❌ Don't use .then() - use async/await
+7. ❌ Don't commit without tests passing
+8. ❌ Don't push to main branch directly - use CV branch
+
+## Quick Reference
+
+### Test Commands
+```bash
+npx jest tests/unit/              # Unit tests
+npx jest tests/integration/       # Integration tests
+npx jest --watch                  # Watch mode
+npx jest --coverage               # Coverage report
+npm test                          # Run all tests
+```
+
+### Database Commands
+```bash
+# Run schema
+psql $SUPABASE_URL -f backend/db/schema.sql
+
+# Run seed data
+psql $SUPABASE_URL -f backend/db/seed.sql
+
+# Verify Sarah Chen
+psql $SUPABASE_URL -c "SELECT name, medications FROM patients WHERE name = 'Sarah Chen';"
+```
+
+### Performance Benchmarks
+```bash
+npm run test:performance  # Run performance suite
+npm run benchmark         # Generate performance report
+```
+
+## Current Phase
+
+**Phase 4.0: Database Setup (Hours 0-6)**
+- Next task: Create Supabase database schema
+- Critical handoff by Hour 6 to Dev 3
+
+---
+
+**When in doubt, reference the PRD (MedSnap_PRD.md) and Task List (MedSnap_TaskList_Updated.md)**
+
